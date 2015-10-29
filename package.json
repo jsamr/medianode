@@ -1,0 +1,21 @@
+{
+  "name": "video-node",
+  "version": "0.1.0",
+  "git": "",
+  "description": "A http server to route CoLab associated files",
+  "main": "/lib/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jules Randolph <jules.randolph@usherbrooke.ca>",
+  "license": "MIT",
+  "dependencies": {
+    "events": "^1.1.0",
+    "finalhandler": "^0.4.0",
+    "fs": "0.0.2",
+    "fs-finder": "^1.8.1",
+    "router": "~1.1",
+    "throttle": "^1.0.3",
+    "url": "^0.11.0"
+  }
+}
