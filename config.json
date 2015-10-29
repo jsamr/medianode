@@ -1,0 +1,10 @@
+{
+  "baseDir":"/home/svein/Téléchargements/",
+  "projects":{
+    "DEI":{
+      "rootDir":"DEI",
+      "expRegex":"*",
+      "videoRegex":"*.mp4"
+    }
+  }
+}
