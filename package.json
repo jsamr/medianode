@@ -20,5 +20,6 @@
     "router": "~1.1",
     "throttle": "^1.0.3",
     "url": "^0.11.0"
-  }
+  },
+  "private":true
 }
