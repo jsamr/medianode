@@ -1,5 +1,9 @@
 {
   "baseDir":"/home/svein/Téléchargements/",
+  "mongoAuth":"mongodb://localhost:27017",
+  "crossOriginDomains":[
+    "http://localhost:3000/"
+  ],
   "projects":{
     "DEI":{
       "rootDir":"DEI",

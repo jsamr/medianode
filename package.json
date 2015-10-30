@@ -10,10 +10,13 @@
   "author": "Jules Randolph <jules.randolph@usherbrooke.ca>",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.14.1",
     "events": "^1.1.0",
     "finalhandler": "^0.4.0",
     "fs": "0.0.2",
     "fs-finder": "^1.8.1",
+    "lodash": "^3.10.1",
+    "path": "^0.12.7",
     "router": "~1.1",
     "throttle": "^1.0.3",
     "url": "^0.11.0"
