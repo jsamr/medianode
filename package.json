@@ -12,6 +12,7 @@
   "dependencies": {
     "body-parser": "^1.14.1",
     "events": "^1.1.0",
+    "express-session": "^1.12.1",
     "finalhandler": "^0.4.0",
     "fs": "0.0.2",
     "fs-finder": "^1.8.1",
@@ -21,5 +22,5 @@
     "throttle": "^1.0.3",
     "url": "^0.11.0"
   },
-  "private":true
+  "private": true
 }

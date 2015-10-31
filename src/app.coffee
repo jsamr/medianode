@@ -10,6 +10,7 @@ bodyParser   = require("body-parser")
 _            = require("lodash")
 Finder       = require('fs-finder')
 
+
 HttpError=(msg,status)->
   err=Error.call(this,msg)
   err.stack=""
@@ -39,7 +40,7 @@ logUnauthorized=(req,msg)->
       req.socket.remoteAddress or
       req.connection.socket.remoteAddress}"
 
-setCrossDomainOrigin=(req,res,next) ->
+crossDomainOriginPolicy=(req,res,next) ->
   ref =  req.headers.referer
   match = (_.find configuration.crossOriginDomains, (domain)-> ref.match("#{domain}*")) if ref
   if match
@@ -53,7 +54,7 @@ setCrossDomainOrigin=(req,res,next) ->
 
 router=Router()
 
-router.use(setCrossDomainOrigin)
+router.use(crossDomainOriginPolicy)
 
 router.get('/status',(req,res)->
   file=path.join(process.cwd(),'public/status-ok.svg')
@@ -62,7 +63,6 @@ router.get('/status',(req,res)->
 )
 
 findVideo=(req,res,next)->
-  if false then res.statusCode = 403 && res.end("Access forbidden")
   opts=req.params
   projectConf=configuration.projects[opts.project_acronym]
   if projectConf is undefined then next new HttpError("Project #{opts.project_acronym} is not registered",500)
