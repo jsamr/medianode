@@ -41,16 +41,21 @@ logUnauthorized=(req,msg)->
       req.connection.socket.remoteAddress}"
 
 crossDomainOriginPolicy=(req,res,next) ->
-  ref =  req.headers.referer
-  match = (_.find configuration.crossOriginDomains, (domain)-> ref.match("#{domain}*")) if ref
-  if match
-    res.setHeader "Access-Control-Allow-Origin", match
+  if configuration.crossOriginDomainStrict
+    ref =  req.headers.referer
+    match = (_.find configuration.crossOriginDomains, (domain)-> ref.match("#{domain}*")) if ref
+    if match
+      res.setHeader "Access-Control-Allow-Origin", match
+      res.setHeader "Access-Control-Allow-Methods", "GET, POST"
+      next()
+    else
+      if ref then logUnauthorized req, "UNAUTHORIZED REFERER : #{ref} ATTEMPTED TO CONNECT"
+      else logUnauthorized req,"NON-ORIGINATED ATTEMPT TO CONNECT FROM CLIENT :"
+      next new HttpError("Acces forbidden.",403)
+  else
+    res.setHeader "Access-Control-Allow-Origin", "*"
     res.setHeader "Access-Control-Allow-Methods", "GET, POST"
     next()
-  else
-    if ref then logUnauthorized req, "UNAUTHORIZED REFERER : #{ref} ATTEMPTED TO CONNECT"
-    else logUnauthorized req,"NON-ORIGINATED ATTEMPT TO CONNECT FROM CLIENT :"
-    next new HttpError("Acces forbidden.",403)
 
 router=Router()
 
@@ -62,33 +67,53 @@ router.get('/status',(req,res)->
   fs.createReadStream(file).pipe(res)
 )
 
-findVideo=(req,res,next)->
+checkProject=(req,res,next)->
   opts=req.params
   projectConf=configuration.projects[opts.project_acronym]
   if projectConf is undefined then next new HttpError("Project #{opts.project_acronym} is not registered",500)
   if projectConf.rootDir is undefined then next new HttpError("missing rootDir property for project #{opts.project_acronym}",500)
-  root="#{base}#{projectConf.rootDir}"
-  expDir= Finder.from(root).findDirectory("#{projectConf.expRegex or ''}#{opts.exp_name}")
+  rootPath=Finder.from(base).findDirectory(projectConf.rootDir)
+  if rootPath is null then next new UnreachableResource("Missing directory #{projectConf.rootDir} on server file system for project #{opts.project_acronym}")
+  req.projectConfig=projectConf
+  req.projectDir=rootPath
+  next()
+
+scanExp=(req,res,next)->
+  opts=req.params
+  projectConf=req.projectConfig
+  expDir= Finder.from(req.projectDir).findDirectory("#{projectConf.expRegex or ''}#{opts.exp_name}")
+  if expDir is null then next new UnreachableResource("Exp #{opts.exp_name} associated directory was not found.")
+  places=Finder.from(expDir).findDirectories("video/*").map (absolute)->absolute.replace("#{expDir}/video/","")
+  req.expPlaces={
+    places:places
+  }
+  next()
+
+findVideo=(req,res,next)->
+  opts=req.params
+  projectConf=req.projectConfig
+  expDir= Finder.from(req.projectDir).findDirectory("#{projectConf.expRegex or ''}#{opts.exp_name}")
   if expDir is null then next new UnreachableResource("Exp #{opts.exp_name} associated directory was not found.")
   else
     videoDir=Finder.from(expDir).findDirectory("video/#{opts.place.toLowerCase()}")
-    if videoDir is null then next new UnreachableResource("In exp #{opts.exp_name}, #{opts.place} is not a valid place.")
+    if videoDir is undefined then next new UnreachableResource("In exp #{opts.exp_name}, #{opts.place} is not a valid place.")
     videoFile=Finder.from(videoDir).findFile(projectConf.videoRegex or '')
-    console.log projectConf.videoRegex
-    if videoFile is null then next new UnreachableResource("In exp #{opts.exp_name}, #{opts.place} associated video was not found.")
+    if videoFile is undefined then next new UnreachableResource("In exp #{opts.exp_name}, #{opts.place} associated video was not found.")
     else
-      console.log "video file found : #{videoFile}"
-      req.videoPath=videoFile.replace(root,"vid/")
+      req.videoPath=videoFile.replace(base,"vid/")
       next()
 
 
-router.get('/v/:project_acronym/:exp_name/:place',findVideo,(req,res,next)->
-  vidStreamer req, res, req.videoPath
-)
+router.get('/v/:project_acronym/:exp_name/:place',checkProject,findVideo,(req,res)-> vidStreamer req, res, req.videoPath )
 
-router.get('/i/',(req,res)->
-  res.setHeader "Content-Type","text/plain; charset=utf-8"
-  res.end("Salut connard!"))
+
+router.get('/i/:project_acronym/',checkProject,(req,res)-> res.end()
+
+router.get('/i/:project_acronym/:exp_name',checkProject, scanExp,(req,res)->
+  #Just send 200 status
+  res.setHeader 'Content-Type', 'application/json'
+  res.end(JSON.stringify(req.expPlaces)))
+)
 
 
 router.post('/auth/',bodyParser.urlencoded({extended:false,parameterLimit:2}) ,(req,res)->
