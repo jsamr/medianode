@@ -1,10 +1,13 @@
 {
-	"mode": "development",
-	"forceDownload": false,
-	"random": false,
-	"rootFolder": "/home/svein/Téléchargements/",
-	"rootPath": "vid/",
-	"server": "VidStreamer.js/0.1.4",
-	"maxAge": "3600",
-	"throttle": false
+  "mode": "development",
+  "forceDownload": false,
+  "random": false,
+  "rootFolder": "/home/svein/Téléchargements/CoLab/",
+  "rootPath": "vid/",
+  "server": "ColabVideo/v1.0",
+  "maxAge": "3600",
+  "throttle": false,
+  "customMimes":{
+    ".web-mp4":"video/mp4"
+  }
 }

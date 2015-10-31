@@ -101,6 +101,7 @@ findVideo=(req,res,next)->
     if videoFile is undefined then next new UnreachableResource("In exp #{opts.exp_name}, #{opts.place} associated video was not found.")
     else
       req.videoPath=videoFile.replace(base,"vid/")
+      console.log "VIDEO PATH : #{req.videoPath}"
       next()
 
 

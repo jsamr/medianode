@@ -1,5 +1,5 @@
 {
-  "baseDir":"/home/svein/Téléchargements/",
+  "baseDir":"/home/svein/Téléchargements/CoLab/",
   "mongoAuth":"mongodb://localhost:27017",
   "crossOriginDomainStrict":false,
   "crossOriginDomains":[
@@ -9,7 +9,7 @@
     "DEI":{
       "rootDir":"DEI",
       "expRegex":"*",
-      "videoRegex":"*.mp4"
+      "videoRegex":"*.web-mp4"
     }
   }
 }
