@@ -9,27 +9,56 @@ configuration= require("../config.json")
 bodyParser   = require("body-parser")
 _            = require("lodash")
 Finder       = require('fs-finder')
+os           = require('os')
 
 
-HttpError=(msg,status)->
-  err=Error.call(this,msg)
-  err.stack=""
-  err.status=status
-  err.name="HttpError"
-  err
+ErrorCodes={
+  project:"PROJECT_NOT_CONFIGURED"
+  rootNotConfigured:"PROJECT_ROOT_MISSING"
+  unauthorized:"UNAUTHORIZED_CLIENT"
+  root:"ROOT_DIR_NOT_FOUND"
+  exp:"EXP_DIR_NOT_FOUND"
+  place:"PLACE_DIR_NOT_FOUND"
+  media:"MEDIA_NOT_FOUND"
+}
 
-UnreachableResource=(msg)->
-  err=HttpError.call(this,msg)
-  err.status=404
-  err.name="Unreachable Resource"
-  err
+checkPermission = (file, mask, cb) ->
+  fs.stat file, (error, stats) ->
+    if error
+      cb error, false
+    else
+      cb null, ! !(mask & parseInt((stats.mode & parseInt('777', 8)).toString(8)[0]))
 
-if not configuration? then console.error "Missing config.json file" and exit 1
+
+setErrorCode=(res,msg,error=false)->
+  res.setHeader 'Content-Type','application/json'
+  res.status=if error then error else 200
+  res.end(JSON.stringify(msg))
+  true
+
+if os.platform() isnt "linux"
+  console.error "Must be run on linux"
+  process.exit 1
+if not configuration?
+  console.error "Missing config.json file"
+  process.exit 1
+if not _.isObject(configuration.projects)
+  console.error "Missing or bad projects field in config.json file. Must an object"
+  process.exit 1
+
 
 base=configuration.baseDir
 
 if not base then console.error "Missing baseDir property in config.json file" and exit 1
 if not base.substr(base.length-1) is "/" then base="#{base}/"
+for prjName,project of configuration.projects
+  checkPermission("#{base}#{project.rootDir}",5,(error,answ)->
+    if not answ
+      console.error "Process #{process.id} has not read and execute file permissions for project #{prjName}, directory #{base}#{project.rootDir}."
+      console.error "Execution permission are necessary to enter a directory."
+      console.error error
+      process.exit 1
+  )
 
 logUnauthorized=(req,msg)->
   console.warn msg
@@ -41,7 +70,8 @@ logUnauthorized=(req,msg)->
       req.connection.socket.remoteAddress}"
 
 crossDomainOriginPolicy=(req,res,next) ->
-  if configuration.crossOriginDomainStrict
+  console.log req.headers
+  if configuration.secure
     ref =  req.headers.referer
     match = (_.find configuration.crossOriginDomains, (domain)-> ref.match("#{domain}*")) if ref
     if match
@@ -51,7 +81,7 @@ crossDomainOriginPolicy=(req,res,next) ->
     else
       if ref then logUnauthorized req, "UNAUTHORIZED REFERER : #{ref} ATTEMPTED TO CONNECT"
       else logUnauthorized req,"NON-ORIGINATED ATTEMPT TO CONNECT FROM CLIENT :"
-      next new HttpError("Acces forbidden.",403)
+      setErrorCode(res,ErrorCodes.unauthorized,403)
   else
     res.setHeader "Access-Control-Allow-Origin", "*"
     res.setHeader "Access-Control-Allow-Methods", "GET, POST"
@@ -70,37 +100,58 @@ router.get('/status',(req,res)->
 checkProject=(req,res,next)->
   opts=req.params
   projectConf=configuration.projects[opts.project_acronym]
-  if projectConf is undefined then next new HttpError("Project #{opts.project_acronym} is not registered",500)
-  if projectConf.rootDir is undefined then next new HttpError("missing rootDir property for project #{opts.project_acronym}",500)
+  if projectConf is undefined
+    setErrorCode(res,ErrorCodes.project,500)
+    return
+  if projectConf.rootDir is undefined
+    setErrorCode(res,ErrorCodes.rootNotConfigured,500)
+    return
+  if configuration.secure then console.log ""
+
   rootPath=Finder.from(base).findDirectory(projectConf.rootDir)
-  if rootPath is null then next new UnreachableResource("Missing directory #{projectConf.rootDir} on server file system for project #{opts.project_acronym}")
   req.projectConfig=projectConf
   req.projectDir=rootPath
   next()
 
 scanExp=(req,res,next)->
+  if req.projectDir is null
+    setErrorCode res, ErrorCodes.root
+    return
   opts=req.params
   projectConf=req.projectConfig
   expDir= Finder.from(req.projectDir).findDirectory("#{projectConf.expRegex or ''}#{opts.exp_name}")
-  if expDir is null then next new UnreachableResource("Exp #{opts.exp_name} associated directory was not found.")
-  places=Finder.from(expDir).findDirectories("video/*").map (absolute)->absolute.replace("#{expDir}/video/","")
+  if expDir is null
+    setErrorCode res, ErrorCodes.exp
+    return
+  mediaDir= if projectConf.mediaDir not in ["",undefined,null] then "#{projectConf.mediaDir}/" else ""
+  places=Finder.from(expDir).findDirectories("#{mediaDir}*").map (absolute)->absolute.replace("#{expDir}/#{mediaDir}","")
   req.expPlaces={
     places:places
   }
   next()
 
 findVideo=(req,res,next)->
+  if req.projectDir is null
+    setErrorCode(res,ErrorCodes.root,404)
+    return
   opts=req.params
   projectConf=req.projectConfig
   expDir= Finder.from(req.projectDir).findDirectory("#{projectConf.expRegex or ''}#{opts.exp_name}")
-  if expDir is null then next new UnreachableResource("Exp #{opts.exp_name} associated directory was not found.")
+  if expDir is null
+    setErrorCode(res,ErrorCodes.exp,404)
+    return
   else
-    videoDir=Finder.from(expDir).findDirectory("video/#{opts.place.toLowerCase()}")
-    if videoDir is undefined then next new UnreachableResource("In exp #{opts.exp_name}, #{opts.place} is not a valid place.")
-    videoFile=Finder.from(videoDir).findFile(projectConf.videoRegex or '')
-    if videoFile is undefined then next new UnreachableResource("In exp #{opts.exp_name}, #{opts.place} associated video was not found.")
+    mediaDir= if projectConf.mediaDir not in ["",undefined,null] then "#{projectConf.mediaDir}/" else ""
+    placeDir=Finder.from(expDir).findDirectory("#{mediaDir}#{opts.place.toLowerCase()}")
+    if placeDir is undefined
+      setErrorCode(res,ErrorCodes.place,404)
+      return
+    mediaFile=Finder.from(placeDir).findFile(projectConf.mediaRegex or '')
+    if mediaFile is undefined
+      setErrorCode(res,ErrorCodes.media,404)
+      return
     else
-      req.videoPath=videoFile.replace(base,"vid/")
+      req.videoPath=mediaFile.replace(base,"vid/")
       console.log "VIDEO PATH : #{req.videoPath}"
       next()
 
