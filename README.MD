@@ -81,6 +81,7 @@ un string identifiant l'erreur rencontrée. Ce string peut être récupéré via
 **Un code d'erreur peut donc très bien s'ajouter à une erreur http!** 
 
 | Code                                  |  Signification |
+|:--------------------------------------|:---------------|
 | "INTERNAL.APPLICATION_NOT_REGISTERED" | L'application n'est pas enregistrée |
 | "INTERNAL.REDIS_INTERNAL_ERROR"       | Redis (db de cache) a rencontré un problème |
 | "INTERNAL.PROJECT_NOT_CONFIGURED"     | Le projet n'est pas configuré sur le serveur (aucune entrée dans `projects` correspondante) |
