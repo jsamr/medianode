@@ -15,8 +15,7 @@
         "uri" :"mongodb://localhost:27017",
         "options":{}
       },
-      "projects":["DEI"],
-      "options":{}
+      "projects":["DEI"]
     }
   },
   "redis":{
@@ -28,7 +27,7 @@
       "rootDir":"DEI",
       "expRegex":"*",
       "mediaDir":"video",
-      "mediaRegex":"*.web-mp4",
+      "mediaRegex":"*.web-mp4"
     }
   }
 }
