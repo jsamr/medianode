@@ -1,16 +1,34 @@
 {
+  "port":5000,
   "baseDir":"/home/svein/Téléchargements/CoLab/",
   "secure":false,
-  "crossOriginDomains":[
-    "http://localhost:3000"
+  "disableAuth":false,
+  "debug":true,
+  "delTokensOnShutdown":false,
+  "auth_handlers":[
+    "mongo"
   ],
+  "applications":{
+    "colab":{
+      "auth_handler":{
+        "name":"mongo",
+        "uri" :"mongodb://localhost:27017",
+        "options":{}
+      },
+      "projects":["DEI"],
+      "options":{}
+    }
+  },
+  "redis":{
+    "socket":"/tmp/redis.sock",
+    "expire_min":1440
+  },
   "projects":{
     "DEI":{
       "rootDir":"DEI",
       "expRegex":"*",
       "mediaDir":"video",
       "mediaRegex":"*.web-mp4",
-      "authorizedDomains":[0]
     }
   }
 }

@@ -6,12 +6,29 @@ Il permet le streaming de médias compatibles avec les formats mime html5 [défi
 La configuration se fait à partir du fichier config.json, à la racine du repo. 
 
 
-## Sécurité et intégration
-Le serveur implémente les CORS (Cross Origin Resources Sharing).
-Pour autoriser une origine (une application web) à partager des médias venant de ce serveur, il va falloir
-ajouter l'adresse de l'application web dans le tableau `crossOriginDomains`. Autrement, une erreur `403`
-sera renvoyée au client. Cette sécurité fait qu'**un utilisateur ne peut pas se contenter de renseigner 
-l'adresse du média dans le navigateur pour l'atteindre**.
+## Intégration
+
+### Tokens
+Le serveur utilise **redis** comme cache pour des token de connexion. Cf [la section dédiée](#redis).
+ 
+## Configuration d'une application
+Pour clairement définir les accès à différents médias, le serveur permet la déclaration d'applications.
+Les clients de ces applications auront des droits spécifiques, et des mécanismes d'authentification propres. 
+En voici un exemple : 
+```json
+    "AppName":{
+      "auth_handler":{
+        "name": "some_auth_handler",
+        "uri" :" some_data_store://some_address:some_port",
+        "options":{}
+      },
+      "projects":["ProjectName"]
+    }
+  }
+```
+avec : 
+- `$AppName`      : le nom de l'application, utilisée par la suite dans toutes les requêtes 
+- `$auth_handler` : le gestionnaire d'authentification, confère [la section dédiée](#module)
  
 ## Configuration d'un projet
 Un "projet" du point de vue du serveur est un simple répertoire racine. 
@@ -23,7 +40,6 @@ Il peut être configuré ainsi , dans l'entrée  `projects` du fichier de config
       "expRegex":"*",
       "mediaDir":"videos/"
       "mediaRegex":"*.mp4",
-      "authorizedDomains":[0,1]
     }
 ```
 avec :
@@ -33,7 +49,6 @@ avec :
 - `$expRegex` : l'epression régulière pour matcher les répertoires propres à une expérimentation à partir de `$rootDir` (descendants directs). 
 - `$mediaDir` : le chemin permettant d'atteindre les médias depuis `$expdir`, peut être vide `""`,null ou non renseigné. **NE DOIT NI COMMENCER, NI SE TERMINER PAR /**
 - `$mediaRegex`: l'expression régulière pour matcher les médias à partir de `$expDir` et `placeDir`
-- `$authorizedDomains`: un tableau contenant l'index des domaines autorisés à diffuser ces médias. Les index sont ceux du tableau définit dans la propriété `crossOriginDomains` du fichier de configuration json.
 - `$placeDir` : n'est pas configurable. Passé en paramètre d'une requête. Chacun de ces dossiers permets de distinguer différentes médias suivant leur positionnement. (par exemple `cuisine`, `salle-manger` ...) 
 
 
@@ -49,10 +64,10 @@ On suppose que cette requête contient : `$ProjectName`, `$ExpName`, et `$placeD
 1. Le client est-il autorisé? Vérification avec le champs `$crossOriginDomains`. Si oui, étape 2, si non, erreur http `403`
 2. Le client a-t-il droit d'accéder au projet `$ProjectName`? Vérification avec le champs `$authorizedDomains`. Si oui, étape 3, si non, erreur http `403` 
 3. Le projet existe-t-il dans le fichier de configuration? Si oui, étape 4, si non, erreur http `500`
-4. Le répertoire associé au projet est-il accessible? Si oui, étape 5, si non, erreur http `404` [avec identifiant d'erreur "ROOT_DIR_NOT_FOUND"](#error_ids)
-5. Le dossier associé à expérimentation `$ExpName`, matché avec `$expRegex$exp` existe-t-elle? Si oui, étape 6, si non, erreur http `404` [avec identifiant d'erreur "EXP_DIR_NOT_FOUND"](#error_ids)
-6. Le dossier associé à l'endroit de captation `$placeDir` existe-t-il? Si oui, étape 7, si non erreur http `404` [avec identifiant d'erreur "PLACE_DIR_NOT_FOUND"](#error_ids)
-7. Une $média matchée par `$mediaRegex` est-elle matchée à l'intérieur de `$placeDir`? Si oui, étape 8, si non erreur http `404` [avec identifiant d'erreur "MEDIA_NOT_FOUND"](#error_ids)
+4. Le répertoire associé au projet est-il accessible? Si oui, étape 5, si non, erreur http `404` [avec identifiant d'erreur "SESSION.ROOT_DIR_NOT_FOUND"](#error_ids)
+5. Le dossier associé à expérimentation `$ExpName`, matché avec `$expRegex$exp` existe-t-elle? Si oui, étape 6, si non, erreur http `404` [avec identifiant d'erreur "SESSION.EXP_DIR_NOT_FOUND"](#error_ids)
+6. Le dossier associé à l'endroit de captation `$placeDir` existe-t-il? Si oui, étape 7, si non erreur http `404` [avec identifiant d'erreur "SESSION.PLACE_DIR_NOT_FOUND"](#error_ids)
+7. Une $média matchée par `$mediaRegex` est-elle matchée à l'intérieur de `$placeDir`? Si oui, étape 8, si non erreur http `404` [avec identifiant d'erreur "SESSION.MEDIA_NOT_FOUND"](#error_ids)
 8. Renvoi d'une réponse http avec status `200` et `Content-Type : $type` ou `$type` est un [parmi la liste suivante](#mime_types).
 
 <a name="API"></a>
@@ -62,18 +77,27 @@ On suppose que cette requête contient : `$ProjectName`, `$ExpName`, et `$placeD
 ### Codes d'erreurs
 Ces codes d'erreurs sont distincts d'une erreur http. 
 Le serveur va renvoyer une réponse de format mime `application/json` contenant
-un string identifiant l'erreur rencontrée. **Un code d'erreur peut donc très bien s'ajouter à une erreur http!** 
+un string identifiant l'erreur rencontrée. Ce string peut être récupéré via JSON.parse(response) en javascript par exemple.  
+**Un code d'erreur peut donc très bien s'ajouter à une erreur http!** 
 
-- "UNAUTHORIZED_CLIENT" : Le client n'est pas autorisé, [politique CORS](https://developer.mozilla.org/fr/docs/HTTP/Access_control_CORS)
-- "PROJECT_NOT_CONFIGURED" : Le projet n'est pas configuré sur le serveur (aucune entrée dans `projects` correspondante)
-- "PROJECT_ROOT_MISSING" : Le projet est configuré, mais la propriété "rootDir" est manquante
-- "ROOT_DIR_NOT_FOUND"  : Le répertoire racine du projet n'a pas été trouvé
-- "EXP_DIR_NOT_FOUND"   : Le répertoire d'expérimentation n'a pas été trouvé
-- "PLACE_DIR_NOT_FOUND" : Le répertoire associé à l'endroit de captation (ex `cuisine`) n'a pas été trouvé
-- "MEDIA_NOT_FOUND"     : Aucun média n'a été trouvée dans le répertoire associé à l'endroit de captation.
+| Code                                  |  Signification |
+| "INTERNAL.APPLICATION_NOT_REGISTERED" | L'application n'est pas enregistrée |
+| "INTERNAL.REDIS_INTERNAL_ERROR"       | Redis (db de cache) a rencontré un problème |
+| "INTERNAL.PROJECT_NOT_CONFIGURED"     | Le projet n'est pas configuré sur le serveur (aucune entrée dans `projects` correspondante) |
+| "INTERNAL.PROJECT_ROOT_MISSING"       | Le projet est configuré, mais la propriété "rootDir" est manquante |
+| "AUTH_FAILURE.HANDLER_UNAVAILABLE"    | Le gestionnaire d'authentification n'a pas pu contacter l'entropot distant (mongodb par exemple) |
+| "AUTH_FAILURE.HANDLER_INTERNAL_ERROR" | Le gestionnaire d'authentification a rencontré une erreur |
+| "AUTH_FAILURE.FORBIDDEN"              | Le gestionnaire d'authentification a indiqué que les 'credentials' étaient invalides |
+| "SESSION.FORBIDDEN"                   | L'identification par token a échoué (token expiré, token invalide)  |
+| "SESSION.BAD_QUERY"                   | La arguments 'query' sont manquants ou mal formés  |
+| "SESSION.ROOT_DIR_NOT_FOUND"          | Le répertoire racine du projet n'a pas été trouvé |
+| "SESSION.EXP_DIR_NOT_FOUND"           | Le répertoire d'expérimentation n'a pas été trouvé |
+| "SESSION.PLACE_DIR_NOT_FOUND"         | Le répertoire associé à l'endroit de captation (ex `cuisine`) n'a pas été trouvé |
+| "SESSION.MEDIA_NOT_FOUND"             | Aucun média n'a été trouvée dans le répertoire associé à l'endroit de captation. |
 
 ### Requêtes
-Les requêtes sont évaluées par routes ([path](http://tools.ietf.org/html/rfc3986#section-3.3)), et non par paramètres.
+Les requêtes sont évaluées par routes ([path](http://tools.ietf.org/html/rfc3986#section-3.3)). 
+**Si l'authentification est activée, elles doivent contenir des paramètres d'identification, cf [cette section](#identification) 
 
 <a name="request_place"></a>
 #### [REQUEST_PLACES] Récupération de la liste des endroits de captation (places) 
@@ -118,7 +142,55 @@ Elle a la forme suivante : `/v/$ProjectName/$ExpName/$placeDir` ou  :
 
 [Confère cette description pour connaitre le détail de l'implémentation.](#overview)
 
+## Sécurité 
+<a name="auth"></a>
+### Authentification
 
+Si l'authentification est activée ( `$disableAuth = false` dans le fichier de configuration ), le client va devoir s'authentifier auprès du serveur vidéo.
+**Il est important de noter que le mécanisme d'authentification est à la charge du développeur souhaitant utiliser le serveur vidéo**. 
+Il devra écrire un petit module en javascript de quelques lignes permettant de valider les 'credentials' du client  
+( typiquement en contactant la base de donnée utilisée par l'application hôte du développeur qui souhaite intégrer les vidéos ), voire [la section dédiée pour l'implémentation](#module).
+
+<a name="auth_req"></a>
+#### Requête (POST HTTP/1.1)
+
+Il faut envoyer une requête :
+ 
+- `POST` 
+- sur le chemin `/auth/my_app/`
+- de `Content-Type` mime `application/x-www-form-urlencoded`
+- dont le corps (`body`) contient les 'credentials' [url-encodée](https://en.wikipedia.org/wiki/Percent-encoding#The_application.2Fx-www-form-urlencoded_type) qui seront transmis au [gestionnaire d'authentification](#module)
+
+avec  :
+
+- `$my_app` le nom de l'application déclarée de le fichier de configuration JSON,
+- 'credentials' les paramètres d'authentification qui seront passé au gestionnaire d'authentification de l'application (`$auth_handler` dans le fichier de configuration), une fois désérialisés. 
+
+**Remarque** : la raison du mime type `application/x-www-form-urlencoded` est que
+les navigateurs implémentent aujourd'hui des politiques de sécurité contraignantes, les CORS, qui interdisent des requêtes `POST` de mime type `application/json` sur des domaines croisés. 
+Cf [cet article du MDN pour référence](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS)
+
+#### Réponse HTTP/1.1
+La réponse de de type mime `application/json`
+
+**Si l'authentification a réussie :** Renvoie un objet json contenant deux `string`s : 
+
+- l'un nommé **token**`, à conserver pour l'identification des requêtes  (cf section suivante)
+- l'autre nommé **epoch**, contenant la date d'expiration du token en [temps epoch](https://en.wikipedia.org/wiki/Unix_time)  
+
+**Si l'authentification a échouée :** Renvoie un code d'erreur au format json dont le préfixe est `AUTH_FAILURE`, [confère la section dédiée pour en conaitre la signification](#error_ids).
+
+<a name="identification"></a>
+### Identification
+
+Une requête sur un chemin media `/m/*` ou info `/i/*` doit nécessairement contenir deux paramètres d'identification, **a** (application) et **t** (token)
+Exemple d'url complète : `http://serveur-media/m/MY_PROJECT/MY_EXP/MY_PLACE?a=my_app&t=my_token`
+avec `my_app` le nom de l'application enregistrée dans le fichier de configuration et `my_token` le token obtenu [à l'authentification](#auth).
+
+<a name="module"></a> 
+## Module 
+** Le serveur vidéo se contentera de charger ce module, d'appeler la méthode `authAsync` .... ]**  
+ 
 <a name="mime_types"></a>
 ## Types mimes
 
@@ -161,7 +233,14 @@ Voici les types supportés par le serveur.
 	".ts": "video/mp2t",
 	".ogg": "video/ogg"
 	
+
+<a name="redis"></a>
+## Redis
+Redis doit être configuré (cf le fichier de config redis.conf) pour communiquer via sockets unix accessible dans le fichier "/tmp/redis.sock"
+
+
 ## Lancement du script
+
 
 Le script `video-node.sh` doit se lancer avec deux paramètres : 
 $1 : l'utilisateur

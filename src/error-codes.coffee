@@ -1,0 +1,18 @@
+module.exports={
+  #internal errors
+  application:"INTERNAL.APPLICATION_NOT_REGISTERED"
+  redis:"INTERNAL.REDIS_INTERNAL_ERROR"
+  project:"INTERNAL.PROJECT_NOT_CONFIGURED"
+  rootNotConfigured:"INTERNAL.PROJECT_ROOT_MISSING"
+  #auth failure
+  auth_handler_unavailable:"AUTH_FAILURE.HANDLER_UNAVAILABLE"
+  auth_handler_error:"AUTH_FAILURE.HANDLER_INTERNAL_ERROR"
+  auth_failure:"AUTH_FAILURE.FORBIDDEN"
+  #session
+  session:"SESSION.FORBIDDEN"
+  query:"SESSION.BAD_QUERY"
+  root:"SESSION.ROOT_DIR_NOT_FOUND"
+  exp:"SESSION.EXP_DIR_NOT_FOUND"
+  place:"SESSION.PLACE_DIR_NOT_FOUND"
+  media:"SESSION.MEDIA_NOT_FOUND"
+}
