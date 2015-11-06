@@ -1,20 +1,19 @@
-# SERVEUR VIDEO/IMAGE/AUDIO POUR COLLABORATEURS DU DOMUS
+# SERVEUR MÉDIA SÉCURISÉ POUR COLLABORATEURS DU DOMUS
 
 ## Apperçu
 Le serveur est hébergé à l'adresse du serveur ftp Mignard. 
 Il permet le streaming de médias compatibles avec les formats mime html5 [définis dans cette section](#mime_types).
 La configuration se fait à partir du fichier config.json, à la racine du repo. 
+C'est un petit serveur léger et souple implémenté en javascript/coffeescript (nodejs), il suffit [d'écrire un petit module](#module) pour l'interfacer avec n'importe-quelle application cliente.
 
 
 ## Intégration
 
-### Tokens
-Le serveur utilise **redis** comme cache pour des token de connexion. Cf [la section dédiée](#redis).
- 
 ## Configuration d'une application
 Pour clairement définir les accès à différents médias, le serveur permet la déclaration d'applications.
 Les clients de ces applications auront des droits spécifiques, et des mécanismes d'authentification propres. 
 En voici un exemple : 
+
 ```json
     "AppName":{
       "auth_handler":{
@@ -29,6 +28,7 @@ En voici un exemple :
 avec : 
 - `$AppName`      : le nom de l'application, utilisée par la suite dans toutes les requêtes 
 - `$auth_handler` : le gestionnaire d'authentification, confère [la section dédiée](#module)
+- `$projects`     : les projets auxquels auront accès les clients de l'application
  
 ## Configuration d'un projet
 Un "projet" du point de vue du serveur est un simple répertoire racine. 
@@ -57,6 +57,10 @@ avec :
 - une regexp est contenur entre crochets `<[0-9]+>`
 - la wildcard `*` équivaut à `<[0-9a-zA-Z/.-_ ]+>` 
 
+
+<a name="API"></a>
+## API
+
 <a name="overview"></a>
 **APPERÇU DE L'IMPLÉMENTATION** : Lorsqu'une requête d'accès à un média est envoyée au serveur ([cf section API](#API)), la démarche pour diffuser le bon fichier va être la suivante.
 On suppose que cette requête contient : `$ProjectName`, `$ExpName`, et `$placeDir`
@@ -69,9 +73,6 @@ On suppose que cette requête contient : `$ProjectName`, `$ExpName`, et `$placeD
 6. Le dossier associé à l'endroit de captation `$placeDir` existe-t-il? Si oui, étape 7, si non erreur http `404` [avec identifiant d'erreur "SESSION.PLACE_DIR_NOT_FOUND"](#error_ids)
 7. Une $média matchée par `$mediaRegex` est-elle matchée à l'intérieur de `$placeDir`? Si oui, étape 8, si non erreur http `404` [avec identifiant d'erreur "SESSION.MEDIA_NOT_FOUND"](#error_ids)
 8. Renvoi d'une réponse http avec status `200` et `Content-Type : $type` ou `$type` est un [parmi la liste suivante](#mime_types).
-
-<a name="API"></a>
-## API
 
 <a name="error_ids"></a>
 ### Codes d'erreurs
@@ -98,7 +99,7 @@ un string identifiant l'erreur rencontrée. Ce string peut être récupéré via
 
 ### Requêtes
 Les requêtes sont évaluées par routes ([path](http://tools.ietf.org/html/rfc3986#section-3.3)). 
-**Si l'authentification est activée, elles doivent contenir des paramètres d'identification, cf [cette section](#identification) 
+**Si l'authentification est activée, elles doivent contenir des paramètres d'identification, cf [cette section](#identification)**
 
 <a name="request_place"></a>
 #### [REQUEST_PLACES] Récupération de la liste des endroits de captation (places) 
@@ -111,9 +112,10 @@ Cette requête renvoie :
   
 **Sinon**
 
-- Une erreur http `500` avec [code d'erreur  "PROJECT_NOT_CONFIGURED"](#error_ids)
-- ou Une erreur http `500` avec [code d'erreur  "PROJECT_ROOT_MISSING"](#error_ids)
-- ou Une erreur http `403` avec [code d'errreur "UNAUTHORIZED_CLIENT"](#error_ids)
+- Une erreur http `500` avec [code d'erreur  "INTERNAL.PROJECT_NOT_CONFIGURED"](#error_ids)
+- ou Une erreur http `500` avec [code d'erreur  "INTERNAL.PROJECT_NOT_CONFIGURED"](#error_ids)
+- ou Une erreur http `403` avec [code d'errreur "SESSION.FORBIDDEN"](#error_ids) 
+
 
 Elle a la forme suivante : `/i/$ProjectName/$ExpName` ou  :
 
@@ -131,9 +133,9 @@ Elle a la forme suivante : `/i/$ProjectName/$ExpName` ou  :
   
 **Sinon**
 
-- Une erreur http `500` avec [code d'erreur  "PROJECT_NOT_CONFIGURED"](#error_ids)
-- ou Une erreur http `500` avec [code d'erreur  "PROJECT_ROOT_MISSING"](#error_ids)
-- ou Une erreur http `403` avec [code d'errreur "UNAUTHORIZED_CLIENT"](#error_ids)
+- Une erreur http `500` avec [code d'erreur  "INTERNAL.PROJECT_NOT_CONFIGURED"](#error_ids)
+- ou Une erreur http `500` avec [code d'erreur  "INTERNAL.PROJECT_NOT_CONFIGURED"](#error_ids)
+- ou Une erreur http `403` avec [code d'errreur "SESSION.FORBIDDEN"](#error_ids) 
 
 Elle a la forme suivante : `/v/$ProjectName/$ExpName/$placeDir` ou  :
 
@@ -160,7 +162,7 @@ Il faut envoyer une requête :
 - `POST` 
 - sur le chemin `/auth/my_app/`
 - de `Content-Type` mime `application/x-www-form-urlencoded`
-- dont le corps (`body`) contient les 'credentials' [url-encodée](https://en.wikipedia.org/wiki/Percent-encoding#The_application.2Fx-www-form-urlencoded_type) qui seront transmis au [gestionnaire d'authentification](#module)
+- dont le corps (`body`) contient les 'credentials' [url-encodés](https://en.wikipedia.org/wiki/Percent-encoding#The_application.2Fx-www-form-urlencoded_type) qui seront transmis au [gestionnaire d'authentification](#module)
 
 avec  :
 
@@ -247,4 +249,4 @@ Le script `video-node.sh` doit se lancer avec deux paramètres :
 $1 : l'utilisateur
 $2 : le groupe associé
 
-**Les dossiers associés à chaque projet doivent être accessibles en lecture pour le groupe $2**
+**Les fichiers associés à chaque projet doivent être accessibles en lecture pour le groupe $2**
