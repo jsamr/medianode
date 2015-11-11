@@ -20,7 +20,7 @@
 
 ## Intégration, configuration
 
-<a name="applications"></a>
+<a name="#applications"></a>
 ### Configuration d'une application ( $applications )
 Pour clairement définir les accès à différents médias, le serveur permet la déclaration d'applications.
 Les clients de ces applications auront des droits spécifiques, et des mécanismes d'authentification propres.
@@ -48,7 +48,7 @@ avec :
 - `$projects`     : les noms des projets auxquels auront accès les clients de l'application
 
 
-<a name="projects"></a>
+<a name="#projects"></a>
 ### Configuration d'un projet ( $projects )
 Un "projet" du point de vue du serveur est un simple répertoire racine.
 Il peut être configuré ainsi , dans l'entrée  `projects` du fichier de configuration :
@@ -101,7 +101,7 @@ avec :
 
 Confère [la section dédiée](#modules)
 
-<a name="redis"></a>
+<a name="#redis"></a>
 ### Configuration de Redis ( $redis )
 **Redis doit être installé pour que le serveur fonctionne**
 Exemple de configuration (config.json):
@@ -119,10 +119,10 @@ Avec `$socket` le socket unix utilisé pour communiquer avec le video-node (ne d
 - Node v0.10 et supérieurs (minor releases)
 - npm v3.3 et supérieurs   (minor releases)
 
-<a name="API"></a>
+<a name="#API"></a>
 ## API
 
-<a name="overview"></a>
+<a name="#overview"></a>
 **APPERÇU DE L'IMPLÉMENTATION d'UN ACCES A UN MDEDIA** : Lorsqu'une requête d'accès à un média est envoyée au serveur ([cf section API](#API)), la démarche pour diffuser le bon fichier va être la suivante.
 On suppose que cette requête contient : `$ProjectName`, `$ExpName`, et `$placeDir`
 
@@ -138,7 +138,7 @@ On suppose que cette requête contient : `$ProjectName`, `$ExpName`, et `$placeD
 9. Une $média matchée par `$mediaRegex` est-elle matchée à l'intérieur de `$placeDir`? Si oui, étape 10, si non erreur http `404` [avec identifiant d'erreur "SESSION.MEDIA_NOT_FOUND"](#error_ids)
 10. Renvoi d'une réponse http avec status `200`, `Content-Type : $type` ou `$type` est un [parmi la liste suivante](#mime_types) et évidemment le contenu du média dans le body.
 
-<a name="error_ids"></a>
+<a name="#error_ids"></a>
 ### Codes d'erreurs
 Ces codes d'erreurs sont distincts d'une erreur http.
 Le serveur va renvoyer une réponse de format mime `application/json` contenant
@@ -166,7 +166,7 @@ un string identifiant l'erreur rencontrée. Ce string peut être récupéré via
 Les requêtes sont évaluées par routes ([path](http://tools.ietf.org/html/rfc3986#section-3.3)).
 **Si l'authentification est activée, elles doivent contenir des paramètres d'identification, cf [cette section](#identification)**
 
-<a name="request_place"></a>
+<a name="#request_place"></a>
 #### [REQUEST_PLACES] Récupération de la liste des endroits de captation (places)
 Cette requête renvoie :
 
@@ -187,7 +187,7 @@ Elle a la forme suivante : `/i/$ProjectName/$ExpName` ou  :
 - `$ProjectName` correspond au `$ProjectName` du fichier de configuration
 - `$ExpName` est le nom de l'expérimentation. ça n'est pas le nom complêt puisque le dossier va être matché avec "$expRegex$ExpName"
 
-<a name="medias"></a>
+<a name="#medias"></a>
 #### [REQUEST_MEDIA] Récupération d'un media
 
 **REMARQUE IMPORTANTE** : il est très recommandé de faire une [REQUEST_PLACES](#request_place) d'abord, pour s'assurer des  endroits de captation disponibles.
@@ -212,7 +212,7 @@ Elle a la forme suivante : `/v/$ProjectName/$ExpName/$placeDir` ou  :
 [Confère cette description pour connaitre le détail de l'implémentation.](#overview)
 
 ## Sécurité
-<a name="auth"></a>
+<a name="#auth"></a>
 ### Authentification par 'credentials'
 
 Si l'authentification est activée ( `$disableAuth = false` dans le fichier de configuration ), le client va devoir s'authentifier auprès du serveur vidéo.
@@ -220,7 +220,7 @@ Si l'authentification est activée ( `$disableAuth = false` dans le fichier de c
 Il devra écrire un petit module en javascript de quelques lignes permettant de valider les 'credentials' du client  
 ( typiquement en contactant la base de donnée utilisée par l'application hôte du développeur qui souhaite intégrer les vidéos ), voire [la section dédiée pour l'implémentation](#module).
 
-<a name="auth_req"></a>
+<a name="#auth_req"></a>
 #### Requête (POST HTTP/1.1)
 
 Il faut envoyer une requête :
@@ -249,7 +249,7 @@ La réponse de de type mime `application/json`
 
 **Si l'authentification a échouée :** Renvoie un code d'erreur au format json dont le préfixe est `AUTH_FAILURE`, [confère la section dédiée pour en connaître la signification](#error_ids).
 
-<a name="auth_token"></a>
+<a name="#auth_token"></a>
 
 ### Authentification par token
 Si un token est encore valide alors que le client relance l'application web utilisatrice du serveur vidéo, il n'est pas nécessaire de se
@@ -273,14 +273,14 @@ Si le token est valide :
 Sinon
 - une réponse avec [code d'erreur "SESSION.FORBIDDEN"](#error_ids) et status=403
 
-<a name="identification"></a>
+<a name="#identification"></a>
 ### Identification
 
 Une requête sur un chemin media `/m/*` ou info `/i/*` doit nécessairement contenir deux paramètres d'identification, **a** (application) et **t** (token)
 Exemple d'url complète : `http://serveur-media/m/MY_PROJECT/MY_EXP/MY_PLACE?a=my_app&t=my_token`
 avec `my_app` le nom de l'application enregistrée dans le fichier de configuration et `my_token` le token obtenu [à l'authentification](#auth).
 
-<a name="module"></a>
+<a name="#module"></a>
 ## Modules / Gestionnaires d'authentification
 Idéalement, les modules devraient être chargés avec npm. Mais nous n'avons pas de dépot npm propre au laboratoire...
 
@@ -353,7 +353,7 @@ Comme vous pouvez le voir la signature du module est très simple.
 
 Eh voià !
 
-<a name="mime_types"></a>
+<a name="#mime_types"></a>
 ## Types mimes
 
 Voici les types supportés par le serveur.
