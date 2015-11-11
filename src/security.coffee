@@ -8,37 +8,52 @@ applications = require("./applications")
 security={
 
   cors: (req,res,next) ->
-      console.log "setting cors"
       res.setHeader "Access-Control-Allow-Origin", '*'
       res.setHeader "Access-Control-Allow-Methods", "GET, POST"
       next()
 
-
-}
-
-if not (configuration.disableAuth and configuration.debug)
-  applications = require("./applications")
-
-  security.auth = (req,res)=>
-    application=applications[req.params.application]
-    if application is undefined
-      methods.setErrorCode(res,ErrorCodes.application,403)
-      return
-    application.authClient(res,req.body)
-
-  security.allow = (req,res,next) ->
+  checkQuery:(req,res,next) ->
     if req.query?.a is undefined
       methods.setErrorCode(res,ErrorCodes.query,422)
       return
-    token = req.query.t
-    if token is undefined
-      methods.setErrorCode(res,ErrorCodes.query,422)
-      return
+    else next()
+
+  checkApp: (req,res,next) ->
     application=applications[req.query.a]
     if application is undefined
       methods.setErrorCode(res, ErrorCodes.application, 403)
       return
-    application.controlClient(token, res, next)
+    else
+      req.application=application
+      next()
+  checkToken:(req,res,next) -> next()
+
+}
+
+if not configuration.serv.disableAuth
+
+  security.authWithCredentials = (req,res)=>
+    application=applications[req.params.application]
+    if application is undefined
+      methods.setErrorCode(res,ErrorCodes.application,403)
+      return
+    application.authClient(req.body,res)
+
+  security.authWithToken = (req,res) ->
+    console.log req.body.token
+    application=applications[req.params.application]
+    if application is undefined
+      methods.setErrorCode(res,ErrorCodes.application,403)
+      return
+    if req.body.token is undefined
+      methods.setErrorCode(res,ErrorCodes.query,422)
+      return
+    application.controlClient(req.body.token, res)
+
+
+
+
+
 
 
 module.exports=security

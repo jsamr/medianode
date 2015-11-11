@@ -7,7 +7,7 @@ appRouter    = require("./app-router")
 
 
 server=http.createServer (req,res)-> appRouter(req,res,finalhandler(req,res,{
-  message:configuration.debug
+  message:configuration.serv.debug
 }))
 
-server.listen(configuration.port)
+server.listen(configuration.serv.port)

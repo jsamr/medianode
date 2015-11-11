@@ -1,5 +1,20 @@
-module.exports=(url, options)->
+
+module.exports = (uri, options) ->
+
   {
-    authsync:(credentials)-> true
+  assertCredentials: (credentials) ->
+    areCredentialsWellFormatted = true
+
+    areCredentialsWellFormatted
+
+  start: ->
+
+  stop: ->
+
+  authClientSync: (credentials) ->
+    success = true
+
+    success
+
   }
 

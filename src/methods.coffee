@@ -12,14 +12,15 @@ setErrorCode=(res,msg,code=200)->
   res.setHeader "Access-Control-Allow-Origin", '*'
   res.setHeader "Access-Control-Allow-Methods", "GET, POST"
   res.status=code
+  if configuration.serv.log then console.warn("ERROR : #{msg}, HTTP status : #{code}")
   res.end(JSON.stringify(msg))
   true
 
-base=configuration.baseDir
+base=configuration.serv.baseDir
 
 if not base
   console.error "Missing baseDir property in config.json file"
-  exit 1
+  process.exit 1
 if not base.substr(base.length-1) is "/" then base="#{base}/"
 
 methods = {
@@ -32,6 +33,9 @@ methods = {
       return
     if projectConf.rootDir is undefined
       setErrorCode(res,ErrorCodes.rootNotConfigured,500)
+      return
+    if not req.application.hasPrerogativeForProject opts.project_acronym
+      setErrorCode(res,ErrorCodes.app_prerogatives,403)
       return
     req.projectConfig=projectConf
     next()
