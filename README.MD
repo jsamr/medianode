@@ -192,7 +192,7 @@ Elle a la forme suivante : `/i/$ProjectName/$ExpName` ou  :
 
 **REMARQUE IMPORTANTE** : il est très recommandé de faire une [REQUEST_PLACES](#request_place) d'abord, pour s'assurer des  endroits de captation disponibles.
 
-**Si le client a le droit, et le projet correctement configuré
+**Si le client a le droit, et le projet correctement configuré**
 
 - Si le media est trouvé, une réponse avec status `200` et `Content-Type : $type` ou `$type` est un [parmi la liste suivante](#mime_types)
 - Sinon, une réponse avec status `200` et `Content-Type : application/json` contenant un [code d'erreur](#error_ids)
@@ -342,7 +342,7 @@ module.exports = function(uri,options){
 ```
 Comme vous pouvez le voir la signature du module est très simple.
 
-```
+
 **Les points clés à comprendre :**
 
 - `uri` et `options` sont directement issus du champs `$auth_handler` de la ou des application(s) qui vont utiliser le module.
@@ -408,6 +408,8 @@ Voici les types supportés par le serveur.
 **Conditions au fonctionnement**
 
 - Le port configuré `$port` doit être ouvert sur le serveur
+- Si l'authentification est activée, s'assurer que les entrepots distants (mongo, postgresql ...) sont accessibles.
+Si les gestionnaires d'authentification n'ont pas accès, le serveur se lancera quand même, et retentera une connexion régulièrement suivant l'application (interval minimal de `$applications$appName$auth_handler$reconnectAfter_s`, 6000s par défaut)
 
 **Ajout de l'utilisateur/groupe au groupe media-node**
 
