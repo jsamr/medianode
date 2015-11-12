@@ -92,7 +92,7 @@ methods = {
     res.setHeader 'Content-Type', 'application/json'
     res.end(JSON.stringify(req.expPlaces))
   flushSvgStatus:(req,res)->
-    file=path.join(process.cwd(),'public/status-ok.svg')
+    file=path.join(process.cwd(),'../public/status-ok.svg')
     res.setHeader 'Content-Type','image/svg+xml'
     fs.createReadStream(file).pipe(res)
   setErrorCode:setErrorCode
