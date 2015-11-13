@@ -62,7 +62,7 @@ module.exports=(name)->
         res.setHeader 'Content-Type', 'application/json'
         setHeaders(res)
         authentification={
-          epoch:new Date()/1000
+          epoch_s:new Date()/1000
           token:token
         }
         if(configuration.serv.log) then console.log("Generating token #{token}")

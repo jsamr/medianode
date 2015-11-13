@@ -245,7 +245,7 @@ La réponse de de type mime `application/json`
 **Si l'authentification a réussie :** Renvoie un objet json contenant deux `string`s :
 
 - l'un nommé **token**`, à conserver pour l'identification des requêtes  (cf section suivante)
-- l'autre nommé **epoch**, contenant la date d'expiration du token en [temps epoch](https://en.wikipedia.org/wiki/Unix_time)  
+- l'autre nommé **epoch_s**, contenant la date d'expiration du token en [temps epoch (secondes)](https://en.wikipedia.org/wiki/Unix_time)  
 
 **Si l'authentification a échouée :** Renvoie un code d'erreur au format json dont le préfixe est `AUTH_FAILURE`, [confère la section dédiée pour en connaître la signification](#error_ids).
 
