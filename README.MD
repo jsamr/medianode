@@ -118,6 +118,7 @@ Avec `$socket` le socket unix utilisé pour communiquer avec le video-node (ne d
 - Redis, v2.8 ou supérieur (minor releases)
 - Node v0.10 et supérieurs (minor releases)
 - npm v3.3 et supérieurs   (minor releases)
+- coffeescript v1.4
 
 <a name="#API"></a>
 ## API

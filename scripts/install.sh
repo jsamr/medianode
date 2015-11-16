@@ -10,7 +10,7 @@ fi
 if [[ $(whereis npm) -eq "" ]]; then
     echo "FAILURE : npm doit être installé!" ; exit 1
 fi
-cp ../redis.conf /etc/redis/media-node-redis.conf
+cp ../redis.conf /etc/redis/redis-media-node.conf
 groupadd media-node &> /dev/null
 echo "Création du groupe 'media-node'"
 echo "Autorisation en lecture / écriture pour le groupe 'media-node'"

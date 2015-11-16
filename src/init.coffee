@@ -41,7 +41,7 @@ if not configuration.applications then console.warn 'Should have an "application
 for prjName,project of configuration.projects
   checkPermission("#{configuration.serv.baseDir}#{project.rootDir}",5,(error,answ)->
     if not answ
-      console.error "Process #{process.id} has not read and execute file permissions for project #{prjName}, directory #{base}#{project.rootDir}."
+      console.error "Process media-node has not read and execute file permissions for project #{prjName}, directory #{configuration.serv.baseDir}#{project.rootDir}."
       console.error "Execution permission are necessary to enter a directory."
       console.error error
       process.exit 1
