@@ -24,6 +24,9 @@ if not _.isObject(configuration.projects)
 if not configuration.redis?.socket
   console.error 'redis must be configured with a unix socket in config.json. ex : "redis":{"socket":"/tmp/redis.sock""}'
   process.exit 1
+if not _.isNumber configuration.redis?.expire_min
+  console.error 'redis must be configured with a expire_min number field in config.json. ex : "redis":{"expire_min":60"}'
+  process.exit 1
 if not _.isNumber(configuration.serv.port)
   console.error 'A server port must be specified in config.json file, in "serv.port" '
   process.exit 1
