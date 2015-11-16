@@ -10,6 +10,9 @@ fi
 if [[ $(whereis npm) -eq "" ]]; then
     echo "FAILURE : npm doit être installé!" ; exit 1
 fi
+if [[ $(whereis coffee) -eq "" ]]; then
+    echo "FAILURE : coffee-script doit être installé!" ; exit 1
+fi
 cp ../redis.conf /etc/redis/redis-media-node.conf
 groupadd media-node &> /dev/null
 echo "Création du groupe 'media-node'"
