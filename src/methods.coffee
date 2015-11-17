@@ -76,7 +76,8 @@ methods = {
           if not expDir? then setErrorCode(res,ErrorCodes.exp,404)
           else
             mediaDir= if projectConf.mediaDir not in ["",undefined,null] then "#{projectConf.mediaDir}/" else ""
-            placeDir=Finder.from(expDir).findDirectory("#{mediaDir}#{opts.place.toLowerCase()}")
+            placeDir=Finder.from(expDir).findDirectory("#{mediaDir}#{opts.place}")
+            console.info placeDir
             if not placeDir? then setErrorCode(res,ErrorCodes.place,404)
             else
               mediaFile=Finder.from(placeDir).findFile(projectConf.mediaRegex or '')
