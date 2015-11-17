@@ -1,8 +1,8 @@
 {
   "serv":{
     "port":5000,
-    "baseDir":"/home/local/USHERBROOKE/ranj2004/Téléchargements/CoLab/",
-    "disableAuth":true,
+    "baseDir":"/home/svein/Downloads/CoLab/",
+    "disableAuth":false,
     "debug":true,
     "log":true,
     "delTokensOnShutdown":false,
@@ -26,10 +26,6 @@
         "reconnectAfter_s":3600
       },
       "projects":["DEI"]
-    },
-    "myapp":{
-      "auth_handler":null,
-      "projects":["Son"]
     }
   },
   "redis":{
@@ -42,12 +38,6 @@
       "expRegex":"*",
       "mediaDir":"video",
       "mediaRegex":"*.web-mp4"
-    },
-    "Son":{
-      "rootDir":"Son",
-      "expRegex":"*",
-      "mediaDir":null,
-      "mediaRegex":"*.wav"
     }
   }
 }

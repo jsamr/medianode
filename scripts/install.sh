@@ -4,15 +4,16 @@ cd "${BASH_SOURCE%/*}" || (echo "FAILURE: impossible de trouver le répertoire c
 if [[ $(id -u) -ne 0 ]]; then
     echo "FAILURE : Doit être éxécuté avec les privilèges super-utilisateur!" ; exit 1
 fi
-if [[ $(whereis node) -eq "" ]]; then
+hash node 2>/dev/null || {
     echo "FAILURE : node doit être installé!" ; exit 1
-fi
-if [[ $(whereis npm) -eq "" ]]; then
+}
+hash npm 2>/dev/null || {
     echo "FAILURE : npm doit être installé!" ; exit 1
-fi
-if [[ $(whereis coffee) -eq "" ]]; then
+}
+hash coffee 2>/dev/null || {
     echo "FAILURE : coffee-script doit être installé!" ; exit 1
-fi
+}
+
 cp ../redis.conf /etc/redis/redis-media-node.conf
 groupadd media-node &> /dev/null
 echo "Création du groupe 'media-node'"
