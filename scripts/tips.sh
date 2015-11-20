@@ -20,12 +20,16 @@ sudo mount -t cifs -o username='\Administrateur',password='!domuslab1',gid='medi
 # 5. Vérifier que l'export fonctionne
 # showmount -e
 
+# 6. Si le serveur utilise ufw, ouvrir les ports adéquats pour l'ip du client $IP_CLIENT
+# sudo ufw allow from $IP_CLIENT to any port 111
+# sudo ufw allow from $IP_CLIENT to any port 2049
+# sudo ufw reload
 # CLIENT
 # ------------------------
 
 # 1. installer nfs commons
 # sudo apt-get install nfs-common
 # 2. tester avec mount
-# sudo mount -t nfs dinf-merle.dinf.fsci.usherbrooke.ca:/home/local/USHERBROOKE/ranj2004/Téléchargements/CoLab/ /media/node/DEI
+# sudo mount -t nfs dinf-merle.dinf.fsci.usherbrooke.ca:/data/dei_prj /media/node/DEI
 # 3. ajouter à /etc/fstab
-# dinf-merle.dinf.fsci.usherbrooke.ca:/srv/nfs  /media/colab  nfs  rsize=8192 and wsize=8192,noexec,nosuid,gid=media-node
+# dinf-mignard.dinf.fsci.usherbrooke.ca:/data/dei_prj  /media/colab  nfs  rsize=8192 and wsize=8192,noexec,nosuid,gid=media-node
