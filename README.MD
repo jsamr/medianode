@@ -89,6 +89,7 @@ avec :
   "log":true,
   "delTokensOnShutdown":false,
   "streamer":{
+     "maxAge":86400,
      "customMimes":{
        ".web-mp4":"video/mp4"
      }
@@ -103,7 +104,8 @@ avec :
  - `$debug` : lancer le serveur en mode débug. Donne droit à l'activation de $disableAuth, et permet de rediriger les erreurs dans le corps de la réponse HTTP. Très pratique pour débugguer !
  - `$log` : active ou désactive la journalisation dans la console.
  - `$delTokensOnShutdown` : invalide les tokens lorsque le serveur s'arrête.
- - `$streamer.$customMimes` : Permet de mapper des associations de fichier avec [un mime-type](#mime_types).
+ - `$streamer.$customMimes` : Permet de mapper des associations de fichier avec [un mime-type](#mime_types) (défaut `{}`) .
+ - `$streamer.$maxAge` : Indique au navigateur combien de secondes devrait-il conserver en câche le média téléchargé (défaut `3600`).
 
 ### Configuration des gestionnaires d'authentification ( $auth_handlers )
 
