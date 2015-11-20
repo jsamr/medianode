@@ -78,16 +78,23 @@ avec :
 
 ### Configuration du serveur ( $serv )
  Voici un exemple :
+
  ```json
+
  "serv":{
   "port":5000,
   "baseDir":"/home/svein/Téléchargements/CoLab/",
   "disableAuth":true,
   "debug":true,
   "log":true,
-  "delTokensOnShutdown":false
+  "delTokensOnShutdown":false,
+  "streamer":{
+     "customMimes":{
+       ".web-mp4":"video/mp4"
+     }
+   }
 }
- ```
+ ```  
  avec :
 
  - `$port` : le port d'écoute du serveur
@@ -96,6 +103,7 @@ avec :
  - `$debug` : lancer le serveur en mode débug. Donne droit à l'activation de $disableAuth, et permet de rediriger les erreurs dans le corps de la réponse HTTP. Très pratique pour débugguer !
  - `$log` : active ou désactive la journalisation dans la console.
  - `$delTokensOnShutdown` : invalide les tokens lorsque le serveur s'arrête.
+ - `$streamer.$customMimes` : Permet de mapper des associations de fichier avec [un mime-type](#mime_types).
 
 ### Configuration des gestionnaires d'authentification ( $auth_handlers )
 
@@ -116,9 +124,20 @@ Avec `$socket` le socket unix utilisé pour communiquer avec le video-node (ne d
 ## Dépendances
 
 - Redis, v2.8 ou supérieur (minor releases)
-- Node v0.10 et supérieurs (minor releases)
-- npm v3.3 et supérieurs   (minor releases)
-- coffeescript v1.4
+- Node v0.10 et supérieurs 
+- npm v1.3 et supérieurs   
+- coffeescript v1.10 (**via npm** : `sudo npm install -g coffee-script@1.10` )
+
+Exemple pour **debian, ubuntu...**  
+> sudo apt-get install redis-server nodejs npm
+
+**Problème connu avec nodejs**  
+Pour certaines verison de node, il y a un conflit avec un packet node qui n'a rien à voir avec nodejs.  
+Faites `whereis node`.   
+**Si aucun répertoire n'apparait**, il faut faire un symlink de nodejs vers node :  
+> sudo ln -s /usr/bin/nodejs /usr/sbin/node
+> sudo ln -s /usr/bin/nodejs /usr/bin/node
+
 
 <a name="API"></a>
 ## API

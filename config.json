@@ -7,8 +7,6 @@
     "log":true,
     "delTokensOnShutdown":false,
     "streamer":{
-      "mode": "development",
-      "maxAge": "3600",
       "customMimes":{
         ".web-mp4":"video/mp4"
       }
