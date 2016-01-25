@@ -436,3 +436,9 @@ Si les gestionnaires d'authentification n'ont pas accès, le serveur se lancera 
 **Ajout de l'utilisateur/groupe au groupe media-node**
 
 > `sudo usermod -a -G media-node nom_utilisateur_ou_groupe`
+
+
+## Bugs connus
+
+- Si un fichier dont le nom matche l'expression régulière `projects.$.mediaRegex` est corrompus mais existe, il sera tout de même conservé en cache.
+Il faudra dans ce cas redémarrer le serveur. 

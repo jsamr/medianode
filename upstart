@@ -1,0 +1,23 @@
+# Exemple de configuration upstart /etc/init/media-node.conf
+# upstart est un gestionnaire de service très populaire, déployé sur Debian et Ubuntu par exemple.
+# Une fois configuré, on peut démarrer media-node ainsi :
+# sudo start media-node
+# DANS CET EXEMPLE, le dépot git a été cloné dans le répertoire /opt/media-node/
+
+# When to start the service
+start on runlevel [!06]
+
+# When to stop the service
+stop on shutdown
+
+# Automatically restart process if crashed
+respawn
+respawn limit 10 5
+
+setgid media-node
+
+script
+    export PATH=/opt/local/bin:/opt/local/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    exec /opt/media-node/scripts/media-node.sh > /var/log/media-node.log
+end script
+
