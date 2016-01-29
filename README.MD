@@ -83,7 +83,7 @@ avec :
 
  "serv":{
   "port":5000,
-  "baseDir":"/home/svein/Téléchargements/CoLab/",
+  "baseDir":"/home/dummy/medias/CoLab/",
   "disableAuth":true,
   "debug":true,
   "log":true,
