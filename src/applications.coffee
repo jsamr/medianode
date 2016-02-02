@@ -1,12 +1,9 @@
 tokens        = require('./tokens')
 configuration = require("../config.json")
 methods       = require("./methods")
-ErrorCodes    = require("./error-codes")
 _             = require("lodash")
 authHandlers  = require("./auth-handlers")
-cleanup       = require("../lib/cleanup")
 declared_auth_handlers =configuration.auth_handlers or []
-sessionHash=null
 
 
 
@@ -36,7 +33,6 @@ class AuthApplication extends BasicApplication
 applications={}
 ApplicationClass = if configuration.serv.disableAuth then BasicApplication  else AuthApplication
 for appName,params of configuration.applications
-  console.log(_.isFunction(ApplicationClass))
   applications[appName]=new ApplicationClass(params,appName)
 
 

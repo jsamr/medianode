@@ -26,8 +26,7 @@ security={
     else
       req.application=application
       next()
-  checkToken:(req,res,next) -> next()
-
+  checkToken:(req,res,next) -> req.application.controlClient req.query.t, res, next
 }
 
 if not configuration.serv.disableAuth
@@ -40,7 +39,6 @@ if not configuration.serv.disableAuth
     application.authClient(req.body,res)
 
   security.authWithToken = (req,res) ->
-    console.log req.body.token
     application=applications[req.params.application]
     if application is undefined
       methods.setErrorCode(res,ErrorCodes.application,403)

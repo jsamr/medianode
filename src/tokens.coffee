@@ -43,9 +43,7 @@ module.exports=(name)->
       (err,rep)-> if rep is 0 and err is null then store(cb) else cb.call(null,err,token))
 
   registered   :  (token, res, next)    ->
-    console.log(token)
     redisClient.exists(prefix+token,(err,exists)->
-      console.log exists
       if exists is 1
         if next then next()
         else

@@ -7,10 +7,6 @@ express        = require("express")
 
 expressRouter=express()
 
-appRouter=Router()
-
-
-
 if not (configuration.serv.disableAuth and configuration.serv.debug)
   expressRouter.post('/auth/c/:application',bodyParser.urlencoded({extended:false}) , sec.authWithCredentials)
   expressRouter.post('/auth/t/:application',bodyParser.urlencoded({extended:false})  ,  sec.authWithToken)
