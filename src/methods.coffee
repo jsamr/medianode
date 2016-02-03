@@ -23,11 +23,36 @@ setErrorCode=(res,msg,code=200,req,log=logger)->
   res.setHeader "Access-Control-Allow-Methods", "GET, POST"
   res.status=code
   client=""
-  if req then client=", CLIENT:#{getClientIp(req)}"
-  log.warn("#{msg}, HTTP status : #{code}#{client}")
+  if req? then client=", CLIENT: #{getClientIp(req)}"
+  log.warn("ERROR : #{msg}, HTTP status : #{code}#{client}")
   res.end(JSON.stringify(msg))
   true
 
+controlExp=(req,res)->
+  projectConf=req.projectConfig
+  rootPath=Finder.from(base).findDirectory(projectConf.rootDir)
+  if not rootPath?
+    setErrorCode res, ErrorCodes.root, 500, req, expChLogger
+    return false
+
+  opts=req.params
+  expChLogger.trace "Found root : #{rootPath}"
+  expDir= Finder.from(rootPath).findDirectory("#{projectConf.expRegex or ''}#{opts.exp_name}")
+  if not expDir?
+    setErrorCode res, ErrorCodes.exp, 404, req, expChLogger
+    return false
+  expChLogger.trace "Found exp dir : #{expDir}"
+
+  mediaDirName= if projectConf.mediaDir not in ["",undefined,null] then "#{projectConf.mediaDir}/" else "./"
+  mediaDir = Finder.in(expDir).findDirectory mediaDirName.replace "/",""
+
+  if (not mediaDir) and mediaDirName isnt "./"
+    setErrorCode res, ErrorCodes.mdir, 404, req, expChLogger
+    return false
+  else expChLogger.trace "Found media dir : #{mediaDir}"
+
+  req.mediaPath=(mediaDir || expDir)
+  true
 
   
 base=configuration.serv.baseDir
@@ -54,23 +79,7 @@ methods = {
     req.projectConfig=projectConf
     next()
   checkExp:(req,res,next)->
-    projectConf=req.projectConfig
-    rootPath=Finder.from(base).findDirectory(projectConf.rootDir)
-    if not rootPath?
-      setErrorCode res, ErrorCodes.root, req, expChLogger
-      return
-    opts=req.params
-    expDir= Finder.from(rootPath).findDirectory("#{projectConf.expRegex or ''}#{opts.exp_name}")
-    if not expDir?
-      setErrorCode res, ErrorCodes.exp, req, expChLogger
-      return
-    mediaDirName= if projectConf.mediaDir not in ["",undefined,null] then "#{projectConf.mediaDir}/" else ""
-    mediaDir = Finder.findFile "#{expDir}#{mediaDirName}"
-    console.log mediaDir
-    req.appPaths={
-      exp :   expDir
-      media : mediaDirName
-    }
+    if not controlExp req, res then return
     next()
   findMedia:(req,res)->
     projectConf=req.projectConfig
@@ -84,45 +93,28 @@ methods = {
         req.fsErrorCallback= -> methods.findMedia(req,res)
         vidStreamer req, res, req.videoPath, req.fsErrorCallback
         return
-
-      rootPath=Finder.from(base).findDirectory(projectConf.rootDir)
-      if not rootPath?
-        setErrorCode res, ErrorCodes.root, 404, req, mediaLogger
-        return
-
-      mediaLogger.trace "Found root : #{rootPath}"
+      if not controlExp req, res then return
+      mediaDir=req.mediaPath
       opts=req.params
-      projectConf=req.projectConfig
-      expDir= Finder.from(rootPath).findDirectory("#{projectConf.expRegex or ''}#{opts.exp_name}")
-      if not expDir?
-        setErrorCode res, ErrorCodes.exp, 404, req, mediaLogger
-        return
-
-      mediaLogger.trace "Found exp dir : #{expDir}"
-      mediaDir= if projectConf.mediaDir not in ["",undefined,null] then "#{projectConf.mediaDir}/" else ""
-      placeDir=Finder.from(expDir).findDirectory("#{mediaDir}#{opts.place}")
+      placeDir=Finder.from(mediaDir).findDirectory("#{opts.place}")
       if not placeDir?
         setErrorCode res, ErrorCodes.place, 404, req, mediaLogger
         return
-
       mediaLogger.trace "Found place dir : #{placeDir}"
       mediaFile=Finder.from(placeDir).findFile(projectConf.mediaRegex or '')
       if not mediaFile?
         setErrorCode res, ErrorCodes.media, 404, req, mediaLogger
         return
-
       mediaLogger.debug "Found media file : #{mediaFile}"
       req.videoPath=mediaFile.replace(base,"vid/")
-      mediaLogger.info req.path
       pathStore.save req.path, req.videoPath
       vidStreamer req, res, req.videoPath, req.fsErrorCallback
 
   flushProject:(req,res)-> res.end()
   flushPlaces:(req,res)->
     #Just send 200 status
-    paths=req.appPaths
     projectConf=req.projectConfig
-    places = req.application.retrievePlaces paths.exp, paths.media, projectConf
+    places = req.application.retrievePlaces req.mediaPath, projectConf
     res.setHeader 'Content-Type', 'application/json; charset=utf-8'
     res.end(JSON.stringify({places:places}))
   flushSvgStatus:(req,res)->

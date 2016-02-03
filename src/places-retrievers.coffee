@@ -3,23 +3,23 @@ _             = require 'lodash'
 Finder        = require 'fs-finder'
 
 
-singleRetriever = (expPath,mediaPath,projectConf,absolute)->
+singleRetriever = (mediaPath,projectConf,absolute)->
   file = Finder.from(absolute).findFile projectConf.mediaRegex or ''
   #if file then pathStore.save file.replace(base,"vid/")
-  place    : absolute.replace "#{expPath}/#{mediaPath}", ""
+  place         : absolute.replace "#{mediaPath}", ""
   fileFound     : !!file
 
-placesWithMetaRetriever = (expPath, mediaPath, projectConf)->
-  _.map (Finder.from(expPath).findDirectories("#{mediaPath}*") || []), (absolute) ->
-    places=singleRetriever expPath, mediaPath, projectConf, absolute
+placesWithMetaRetriever = (mediaPath, projectConf)->
+  _.map (Finder.in(mediaPath).findDirectories("*") || []), (absolute) ->
+    places=singleRetriever mediaPath, projectConf, absolute
     if projectConf.supportsMeta
       meta  = Finder.from(absolute).findFile "meta.yml"
       places.meta = (yamlLoader meta if meta) || {}
     places
 
-standardPlaceRetriever = (expPath, mediaPath, projectConf)->
-  _.map (Finder.from(expPath).findDirectories("#{mediaPath}*") || []), (absolute) ->
-    singleRetriever expPath, mediaPath, projectConf, absolute
+standardPlaceRetriever = (mediaPath, projectConf)->
+  _.map (Finder.in(mediaPath).findDirectories("*") || []), (absolute) ->
+    singleRetriever mediaPath, projectConf, absolute
 
 
 module.exports=

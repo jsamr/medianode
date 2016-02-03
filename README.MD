@@ -184,6 +184,7 @@ un string identifiant l'erreur rencontrée. Ce string peut être récupéré via
 | "SESSION.BAD_QUERY"                   | La arguments 'query' sont manquants ou mal formés  |
 | "SESSION.ROOT_DIR_NOT_FOUND"          | Le répertoire racine du projet n'a pas été trouvé |
 | "SESSION.EXP_DIR_NOT_FOUND"           | Le répertoire d'expérimentation n'a pas été trouvé |
+| "SESSION.MEDIA_DIR_NOT_FOUND"         | Le répertoire contenants les médias (`$mediaDir` dans la configuration d'un projet) n'a pas été trouvé |
 | "SESSION.PLACE_DIR_NOT_FOUND"         | Le répertoire associé à l'endroit de captation (ex `cuisine`) n'a pas été trouvé |
 | "SESSION.MEDIA_NOT_FOUND"             | Aucun média n'a été trouvée dans le répertoire associé à l'endroit de captation. |
 
