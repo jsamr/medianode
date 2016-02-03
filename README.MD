@@ -47,7 +47,7 @@ avec :
   - `$options`     : des options spécifiques au gestionnaire
   - `$reconnectAfter_s` : durée en secondes après laquelle media-node s'autorise à relancer le gestionnaire s'il est défaillant (entrepot injoignable par exemple).
 - `$projects`     : les noms des projets auxquels auront accès les clients de l'application
-- `$enableMeta`    : autorise la diffusion [de meta-informations](#meta-infos) lors des [place requests](#request_place) si et seulement si le projet a l'option `$supportMeta` activée. 
+- `$enableMeta`    : autorise la diffusion [de meta-informations](#meta-infos) lors des [place requests](#request_place) si et seulement si le projet a l'option `$supportsMeta` activée.
 
 
 <a name="projects"></a>
@@ -61,7 +61,7 @@ Il peut être configuré ainsi , dans l'entrée  `projects` du fichier de config
       "expRegex":"*",
       "mediaDir":"videos/"
       "mediaRegex":"*.mp4",
-      "supportMeta":true
+      "supportsMeta":true
     }
 ```
 avec :
@@ -72,7 +72,7 @@ avec :
 - `$mediaDir` : le chemin permettant d'atteindre les médias depuis `$expdir`, peut être vide `""`,null ou non renseigné. **NE DOIT NI COMMENCER, NI SE TERMINER PAR /**
 - `$mediaRegex`: l'expression régulière pour matcher les médias à partir de `$expDir` et `placeDir`
 - `$placeDir` : n'est pas configurable. Passé en paramètre d'une requête. Chacun de ces dossiers permets de distinguer différents médias suivant leur positionnement. (par exemple `cuisine`, `salle-manger` ...)
-- `$supportMeta` : signale que [les meta-infos par fichier YAML](#meta-infos) sont activées si sa valeur est `true`
+- `$supportsMeta` : signale que [les meta-infos par fichier YAML](#meta-infos) sont activées si sa valeur est `true`
 
 **REMARQUE IMPORTANTE** : la syntaxe des regexp est spécifique à une librairie utilisée pour le projet, [**veuillez vous renseigner ici.**](https://github.com/Carrooi/Node-FsFinder#path-mask)
 
@@ -129,8 +129,8 @@ Avec `$socket` le socket unix utilisé pour communiquer avec le video-node (ne d
 ## Dépendances
 
 - Redis, v2.8 ou supérieur (minor releases)
-- Node v0.10 et supérieurs 
-- npm v1.3 et supérieurs   
+- Node v0.10 et supérieurs
+- npm v1.3 et supérieurs
 - coffeescript v1.10 (**via npm** : `sudo npm install -g coffee-script@1.10` )
 
 Exemple pour **debian, ubuntu...**  
@@ -138,7 +138,7 @@ Exemple pour **debian, ubuntu...**
 
 **Problème connu avec nodejs**  
 Pour certaines verison de node, il y a un conflit avec un packet node qui n'a rien à voir avec nodejs.  
-Faites `whereis node`.   
+Faites `whereis node`.
 **Si aucun répertoire n'apparait**, il faut faire un symlink de nodejs vers node :  
 > sudo ln -s /usr/bin/nodejs /usr/sbin/node
 > sudo ln -s /usr/bin/nodejs /usr/bin/node
@@ -195,20 +195,41 @@ Les requêtes sont évaluées par routes ([path](http://tools.ietf.org/html/rfc3
 #### [REQUEST_PLACES] Récupération de la liste des endroits de captation (places)
 Cette requête renvoie :
 
-**Si le client a le droit, et le projet correctement configuré, une réponse avec status `200` sous format application/json**
+**Si le client a le droit, et le projet correctement configuré, une réponse avec status `200` sous format application/json au format utf-8**
 
-- Une liste sous forme de tableau des endroits de captation trouvé pour une expérimentation donnée si le dossier d'expérimentation existe. **ATTENTION** Le serveur ne vérifie pas si ces dossiers contiennent un média. Chaque endroit de captation est un objet contenant les champs suivants:
+- Un objet dont l'attribut `places` est une liste sous forme de tableau des endroits de captation trouvé pour une expérimentation donnée si le dossier d'expérimentation existe. **ATTENTION** Le serveur ne vérifie pas si ces dossiers contiennent un média. Chaque endroit de captation est un objet contenant les champs suivants:
   - `place` : le lieu de captation, c-à-d le nom du dossier
   - `fileFound` : `true` si un fichier a été trouvé, `false` sinon
-  - `meta` : **optionnel** Si l'option `$supportMeta` est activée pour le projet **et** l'option `$enableMeta` est activée pour l'application : 
-    - un objet contenant les champs [du fichier YAML](#meta-files) si un tel fichier existe
-    - `null` sinon
+  - `meta` : **optionnel** Si l'option `$supportsMeta` est activée pour le projet **et** l'option `$enableMeta` est activée pour l'application :
+    - un objet contenant les champs [du fichier YAML](#meta-infos) si un tel fichier existe
+    - `{}` sinon
 - Un [code d'erreur](#error_ids) si un problème est rencontré
+
+Exemple :
+```json
+{
+  "places": [
+    {
+      "place": "chambre",
+      "fileFound": true,
+      "meta": {
+        "warning": "Ne fonctionne plus a partir de la minute 32",
+        "comments": "Nous avertir s'il manque une partie de video que vous trouvez importante.",
+        "soundQ": 2
+      }
+    },
+    {
+      "place": "cuisine-plafond",
+      "fileFound": true,
+      "meta": {}
+    }
+  ]
+}
+```
 
 **Sinon**
 
 - Une erreur http `500` avec [code d'erreur  "INTERNAL.PROJECT_NOT_CONFIGURED"](#error_ids)
-- ou Une erreur http `500` avec [code d'erreur  "INTERNAL.PROJECT_NOT_CONFIGURED"](#error_ids)
 - ou Une erreur http `403` avec [code d'errreur "SESSION.FORBIDDEN"](#error_ids)
 
 
@@ -385,11 +406,11 @@ Eh voià !
 
 <a name="meta-infos"></a>
 ## Meta-infos
-Lorsque les meta-infos sont activées, les dossiers contenant les medias **peuvent** contenir un fichier `meta.yml` [respectant le format YAML](https://fr.wikipedia.org/wiki/YAML)
+Lorsque les meta-infos sont activées, les dossiers contenant les medias **peuvent** contenir un fichier `meta.yml` [respectant le format YAML](https://fr.wikipedia.org/wiki/YAML) et **devant être encodé en utf-8**
 
 
 Les quatre champs supportés par défaut sont les suivant (exemple) :
- 
+
 ```yaml
 ---
 error : "Le media est corrompu"
@@ -398,7 +419,7 @@ comments: "Blablabla"
 soundQ: 0
 ```
 
-- `$error` : Le fichier ne peut être servit depuis le serveur, il est inexistant ou corrompu. 
+- `$error` : Le fichier ne peut être servit depuis le serveur, il est inexistant ou corrompu.
 - `$warning` : Le fichier est servit mais n'est pas totalement intègre
 - `$comments` : commentaire divers
 - `$soundQ` : si le media est de type vidéo ou audio, qualité sonnore allant de 0 (pas de son) à 3 (bonne qualité)
@@ -472,4 +493,4 @@ Si les gestionnaires d'authentification n'ont pas accès, le serveur se lancera 
 ## Bugs connus
 
 - Si un fichier dont le nom matche l'expression régulière `projects.$.mediaRegex` est corrompus mais existe, il sera tout de même conservé en cache.
-Il faudra dans ce cas redémarrer le serveur. 
+Il faudra dans ce cas redémarrer le serveur.

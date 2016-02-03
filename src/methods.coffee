@@ -1,12 +1,12 @@
-ErrorCodes    = require("./error-codes")
-configuration = require("../config.json")
-Finder        = require('fs-finder')
-fs            = require("fs")
-_             = require("lodash")
-vidStreamer   = require("../lib/vidStreamer")
-path          = require("path")
-pathStore     = require("./path-store")
-Logger        = require("pince")
+ErrorCodes    = require "./error-codes"
+configuration = require "../config.json"
+Finder        = require 'fs-finder'
+fs            = require "fs"
+_             = require "lodash"
+vidStreamer   = require "../lib/vidStreamer"
+path          = require "path"
+pathStore     = require "./path-store"
+Logger        = require "pince"
 
 prefix          = "media-node:methods"
 logger          = new Logger prefix
@@ -28,6 +28,8 @@ setErrorCode=(res,msg,code=200,req,log=logger)->
   res.end(JSON.stringify(msg))
   true
 
+
+  
 base=configuration.serv.baseDir
 
 if not base
@@ -63,9 +65,9 @@ methods = {
       setErrorCode res, ErrorCodes.exp, req, expChLogger
       return
     mediaDir= if projectConf.mediaDir not in ["",undefined,null] then "#{projectConf.mediaDir}/" else ""
-    places=Finder.from(expDir).findDirectories("#{mediaDir}*").map (absolute)->absolute.replace("#{expDir}/#{mediaDir}","")
-    req.expPlaces={
-      places:(places or [])
+    req.appPaths={
+      exp : expDir
+      media : mediaDir
     }
     next()
   findMedia:(req,res)->
@@ -99,15 +101,18 @@ methods = {
               else
                 mediaLogger.debug "Found media file : #{mediaFile}"
                 req.videoPath=mediaFile.replace(base,"vid/")
+                mediaLogger.info req.path
                 pathStore.save req.path, req.videoPath
                 vidStreamer req, res, req.videoPath, req.fsErrorCallback
 
   flushProject:(req,res)-> res.end()
   flushPlaces:(req,res)->
     #Just send 200 status
-    console.log req.application
-    res.setHeader 'Content-Type', 'application/json'
-    res.end(JSON.stringify(req.expPlaces))
+    paths=req.appPaths
+    projectConf=req.projectConfig
+    places = req.application.retrievePlaces paths.exp, paths.media, projectConf
+    res.setHeader 'Content-Type', 'application/json; charset=utf-8'
+    res.end(JSON.stringify({places:places}))
   flushSvgStatus:(req,res)->
     file=path.join(process.cwd(),'../public/status-ok.svg')
     res.setHeader 'Content-Type','image/svg+xml'

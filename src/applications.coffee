@@ -1,26 +1,32 @@
-tokens        = require('./tokens')
-configuration = require("../config.json")
-methods       = require("./methods")
-_             = require("lodash")
-authHandlers  = require("./auth-handlers")
+tokens         = require './tokens'
+configuration  = require '../config.json'
+methods        = require './methods'
+_              = require 'lodash'
+authHandlers   = require './auth-handlers'
+placeRetrivers = require './places-retrievers'
+Logger         = require 'pince'
 declared_auth_handlers =configuration.auth_handlers or []
 
-Logger  = require("pince")
 prefix = "media-node:app"
+
 
 class BasicApplication
   revokeClient:(token)-> @_tokens.revoke(token)
   hasPrerogativeForProject:(projectName)-> projectName in @params.projects
-  controlClient:(token,res,next)-> @_tokens.registered token,res,next
+  controlClient:(token,res,next)-> next()
   clearTokens: ->  @_tokens.clear()
   close : ->
   constructor:(@params,name)->
     @logger=new Logger "#{prefix}:name"
     @_tokens=tokens(name, @)
+    @retrievePlaces=if @params.enableMeta then placeRetrivers.withMeta else placeRetrivers.default
+
+
 
 class AuthApplication extends BasicApplication
   authClient:(credentials,res) -> @_authHandler.attemptAuthClient credentials, res, @
-  close : -> try @_authHandler.stop() catch e then @logger.error JSON.stringify e
+  controlClient:(token,res,next)-> @_tokens.registered token,res,next
+  close : -> try @_authHandler.stop() catch e then @logger.error e
   constructor : (params,name)->
     super(params,name)
     if params.auth_handler is null
