@@ -25,18 +25,19 @@ if not _.isObject(configuration.projects)
   logger.error "Missing or bad projects field in config.json file. Must an object"
   process.exit 1
 if not configuration.redis?.socket
-  logger.error 'redis must be configured with a unix socket in config.json. ex : "redis":{"socket":"/tmp/redis.sock""}'
+  logger.error 'Redis must be configured with a unix socket in config.json. ex : "redis":{"socket":"/tmp/redis.sock""}'
   process.exit 1
 if not _.isNumber configuration.redis?.expire_min
-  logger.error 'redis must be configured with a expire_min number field in config.json. ex : "redis":{"expire_min":60"}'
+  logger.error 'Redis must be configured with a expire_min number field in config.json. ex : "redis":{"expire_min":60"}'
   process.exit 1
 if not _.isNumber(configuration.serv.port)
   logger.error 'A server port must be specified in config.json file, in "serv.port" '
   process.exit 1
 
 if configuration.serv.disableAuth and not configuration.serv.debug
-    logger.warn("Impossible to disable authentification in non debug mode.")
+    logger.error("Impossible to disable authentification in non debug mode. Switch 'debug' to 'true' in your config file.")
     configuration.serv.disableAuth = false
+    process.exit 1
 
 if not configuration.applications then logger.warn 'Should have an "application" property with registered applications.'
 
@@ -50,4 +51,10 @@ for prjName,project of configuration.projects
       process.exit 1
   )
 
-logger.info("server init successful")
+logger.info "server init successful"
+if _.isString configuration.srv.logLevel
+  logger.info "setting log level to #{configuration.srv.logLevel}"
+  Logger.setLevel configuration.srv.logLevel
+else
+  logger.info "setting log level to default : info"
+  Logger.setLevel "info"

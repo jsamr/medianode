@@ -89,7 +89,7 @@ avec :
   "baseDir":"/home/dummy/medias/CoLab/",
   "disableAuth":true,
   "debug":true,
-  "log":true,
+  "logLevel":"warn",
   "delTokensOnShutdown":false,
   "streamer":{
      "maxAge":86400,
@@ -104,8 +104,8 @@ avec :
  - `$port` : le port d'écoute du serveur
  - `$baseDir` : le répertoire racine à partir duquel le serveur à accès. **Remarque** : seuls les répertoires appartenant au groupe `media-node`
  - `$disableAuth` : désactiver [le module d'authentification](#module). La route d'authentification ne sera pas disponible et les accès aux médias ne requèreront pas de token. **IMPORTANT** : n'est activable que lorsque `$debug`=true.
- - `$debug` : lancer le serveur en mode débug. Donne droit à l'activation de $disableAuth, et permet de rediriger les erreurs dans le corps de la réponse HTTP. Très pratique pour débugguer !
- - `$log` : active ou désactive la journalisation dans la console.
+ - `$debug` : lancer le serveur en mode débug. Donne droit à l'activation de `$disableAuth`, et permet de rediriger les erreurs dans le corps de la réponse HTTP. Très pratique pour débugguer !
+ - `$logLevel` : une valeur parmi `["error", "warn", "info", "debug", "trace"]`. Défaut : `"info"`
  - `$delTokensOnShutdown` : invalide les tokens lorsque le serveur s'arrête.
  - `$streamer.$customMimes` : Permet de mapper des associations de fichier avec [un mime-type](#mime_types) (défaut `{}`) .
  - `$streamer.$maxAge` : Indique au navigateur combien de secondes devrait-il conserver en câche le média téléchargé (défaut `3600`).
