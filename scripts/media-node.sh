@@ -6,7 +6,6 @@ if [[ $(id -u) -ne 0 ]]; then
 fi
 ## executer le script avec le groupe 'media-node'
 sg media-node -c "redis-server /etc/redis/redis-media-node.conf" &
-echo $?
 redisPID=$!
 echo "Redis lancé avec pid ${redisPID}"
 sg media-node -c "coffee ../src/app.coffee"

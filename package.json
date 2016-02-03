@@ -19,6 +19,7 @@
     "fs-finder": "^1.8.1",
     "lodash": "^3.10.1",
     "path": "^0.12.7",
+    "pince": "^0.0.9",
     "redis": "^2.3.0",
     "redis-cache-client": "^1.0.1",
     "router": "~1.1",

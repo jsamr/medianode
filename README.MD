@@ -34,18 +34,20 @@ En voici un exemple :
         "options":{},
         "reconnectAfter_s":6000
       },
-      "projects":["ProjectName1","ProjectName2"]
+      "projects":["ProjectName1","ProjectName2"],
+      "enableMeta":true
     }
   }
 ```
 avec :
 - `$AppName`      : le nom de l'application, utilisée par la suite dans toutes les requêtes
 - `$auth_handler` : le gestionnaire d'authentification, cf [la section dédiée](#module)
-  - `$name`       : le nom du gestionnaire d'authentification utilisé, parmis ceux déclarés dans $auth_handlers`
+  - `$name`       : le nom du gestionnaire d'authentification utilisé, parmis ceux déclarés dans $auth_handlers
   - `$uri`        : le universal resource identifier qui permettra à au gestionnaire de se connecter à la bonne adresse
-  - `$options     : des options spécifiques au gestionnaire
-  - `$reconnectAfter_s : durée en secondes après laquelle media-node s'autorise à relancer le gestionnaire s'il est défaillant (entrepot injoignable par exemple).
+  - `$options`     : des options spécifiques au gestionnaire
+  - `$reconnectAfter_s` : durée en secondes après laquelle media-node s'autorise à relancer le gestionnaire s'il est défaillant (entrepot injoignable par exemple).
 - `$projects`     : les noms des projets auxquels auront accès les clients de l'application
+- `$enableMeta`    : autorise la diffusion [de meta-informations](#meta-infos) lors des [place requests](#request_place) si et seulement si le projet a l'option `$supportMeta` activée. 
 
 
 <a name="projects"></a>
@@ -59,6 +61,7 @@ Il peut être configuré ainsi , dans l'entrée  `projects` du fichier de config
       "expRegex":"*",
       "mediaDir":"videos/"
       "mediaRegex":"*.mp4",
+      "supportMeta":true
     }
 ```
 avec :
@@ -68,8 +71,8 @@ avec :
 - `$expRegex` : l'epression régulière pour matcher les répertoires propres à une expérimentation à partir de `$rootDir` (descendants directs).
 - `$mediaDir` : le chemin permettant d'atteindre les médias depuis `$expdir`, peut être vide `""`,null ou non renseigné. **NE DOIT NI COMMENCER, NI SE TERMINER PAR /**
 - `$mediaRegex`: l'expression régulière pour matcher les médias à partir de `$expDir` et `placeDir`
-- `$placeDir` : n'est pas configurable. Passé en paramètre d'une requête. Chacun de ces dossiers permets de distinguer différentes médias suivant leur positionnement. (par exemple `cuisine`, `salle-manger` ...)
-
+- `$placeDir` : n'est pas configurable. Passé en paramètre d'une requête. Chacun de ces dossiers permets de distinguer différents médias suivant leur positionnement. (par exemple `cuisine`, `salle-manger` ...)
+- `$supportMeta` : signale que [les meta-infos par fichier YAML](#meta-infos) sont activées si sa valeur est `true`
 
 **REMARQUE IMPORTANTE** : la syntaxe des regexp est spécifique à une librairie utilisée pour le projet, [**veuillez vous renseigner ici.**](https://github.com/Carrooi/Node-FsFinder#path-mask)
 
@@ -194,7 +197,12 @@ Cette requête renvoie :
 
 **Si le client a le droit, et le projet correctement configuré, une réponse avec status `200` sous format application/json**
 
-- Une liste sous forme de tableau des endroits d'acquisition trouvé pour une expérimentation donnée si le dossier d'expérimentation existe. **ATTENTION** Le serveur ne vérifie pas si ces dossiers contiennent un média.
+- Une liste sous forme de tableau des endroits de captation trouvé pour une expérimentation donnée si le dossier d'expérimentation existe. **ATTENTION** Le serveur ne vérifie pas si ces dossiers contiennent un média. Chaque endroit de captation est un objet contenant les champs suivants:
+  - `place` : le lieu de captation, c-à-d le nom du dossier
+  - `fileFound` : `true` si un fichier a été trouvé, `false` sinon
+  - `meta` : **optionnel** Si l'option `$supportMeta` est activée pour le projet **et** l'option `$enableMeta` est activée pour l'application : 
+    - un objet contenant les champs [du fichier YAML](#meta-files) si un tel fichier existe
+    - `null` sinon
 - Un [code d'erreur](#error_ids) si un problème est rencontré
 
 **Sinon**
@@ -374,6 +382,29 @@ Comme vous pouvez le voir la signature du module est très simple.
 - lorsque la fonction `authClientSync` renvoit `true`, le serveur va générer un token et le renvoyer au client. Dans le cas contraire, elle renverra [un code d'erreur "AUTH_FAILURE.FORBIDDEN"](#error_ids).
 
 Eh voià !
+
+<a name="meta-infos"></a>
+## Meta-infos
+Lorsque les meta-infos sont activées, les dossiers contenant les medias **peuvent** contenir un fichier `meta.yml` [respectant le format YAML](https://fr.wikipedia.org/wiki/YAML)
+
+
+Les quatre champs supportés par défaut sont les suivant (exemple) :
+ 
+```yaml
+---
+error : "Le media est corrompu"
+warning: "Le media ne fonctionne pas de X min à Y min"
+comments: "Blablabla"
+soundQ: 0
+```
+
+- `$error` : Le fichier ne peut être servit depuis le serveur, il est inexistant ou corrompu. 
+- `$warning` : Le fichier est servit mais n'est pas totalement intègre
+- `$comments` : commentaire divers
+- `$soundQ` : si le media est de type vidéo ou audio, qualité sonnore allant de 0 (pas de son) à 3 (bonne qualité)
+
+Bien entendu, libre à l'utilisateur de rajouter des attributs.  
+Ils seront tous disponibles [dans la requête d'information](#request_place).
 
 <a name="mime_types"></a>
 ## Types mimes

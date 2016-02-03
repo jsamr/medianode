@@ -7,7 +7,11 @@ ErrorCodes    = require("./error-codes")
 methods       = require("./methods")
 applications  = require("./applications")
 _             = require("lodash")
-
+Logger  = require("pince")
+prefix = "media-node:redis"
+appLogger   = new Logger "media-node"
+redisLogger = new Logger prefix
+tokenLogger = new Logger "#{prefix}:tokens"
 redisClient   = redis.createClient(configuration.redis.socket)
 DEFAULT_TOKEN_SIZE=32
 
@@ -19,16 +23,16 @@ setHeaders=(res)->
 cleanupCode= ->
     if configuration.serv.delTokensOnShutdown
       _.invoke applications, "clearTokens"
-      console.info "Flushing tokens out from redis"
+      redisLogger.info "Flushing tokens out from redis"
     if redisClient
-      console.log("Quitting redis client")
+      redisLogger.info("Quitting redis client")
       redisClient.quit()
-    console.log "Closing applications"
+    appLogger.info "Closing applications"
     _.invoke applications, "close"
 
 redisClient.on("error", (err)->
-  console.error "REDIS CLIENT PROBABLY UNAVAILABLE AT SOCKET #{configuration.redis.socket} "
-  console.error err
+  redisLogger.error "REDIS CLIENT PROBABLY UNAVAILABLE AT SOCKET #{configuration.redis.socket} "
+  redisLogger.error JSON.stringify err
   process.exit 1
 )
 
@@ -44,18 +48,22 @@ module.exports=(name)->
 
   registered   :  (token, res, next)    ->
     redisClient.exists(prefix+token,(err,exists)->
+      if err
+        redisLogger.error JSON.stringify err
+        methods.setErrorCode res, ErrorCodes.redis, 500, null, redisLogger
+        return
       if exists is 1
         if next then next()
         else
           setHeaders(res)
           res.end()
-      else methods.setErrorCode(res, ErrorCodes.session, 403)
+      else methods.setErrorCode res, ErrorCodes.session, 403, null, tokenLogger
     )
   revoke       :  (token)    -> redisClient.del(prefix+token)
   publish      :  (res) -> store((err,token)->
       if err
-        console.error err
-        methods.setErrorCode(res,ErrorCodes.redis)
+        redisLogger.error JSON.stringify err
+        methods.setErrorCode res,ErrorCodes.redis, null, redisLogger
       else
         res.setHeader 'Content-Type', 'application/json'
         setHeaders(res)
@@ -63,7 +71,7 @@ module.exports=(name)->
           epoch_s:new Date()/1000+configuration.redis.expire_min*60
           token:token
         }
-        if(configuration.serv.log) then console.log("Generating token #{token}")
+        tokenLogger.debug "Generating token #{token}"
         res.end(JSON.stringify authentification)
   )
   clear : -> redisClient.delPattern "#{prefix}*"
