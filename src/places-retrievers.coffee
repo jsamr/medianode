@@ -6,7 +6,7 @@ Finder        = require 'fs-finder'
 singleRetriever = (mediaPath,projectConf,absolute)->
   file = Finder.from(absolute).findFile projectConf.mediaRegex or ''
   #if file then pathStore.save file.replace(base,"vid/")
-  place         : absolute.replace "#{mediaPath}", ""
+  place         : absolute.replace "#{mediaPath}/", ""
   fileFound     : !!file
 
 placesWithMetaRetriever = (mediaPath, projectConf)->

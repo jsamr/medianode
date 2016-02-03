@@ -52,9 +52,9 @@ for prjName,project of configuration.projects
   )
 
 logger.info "server init successful"
-if _.isString configuration.srv.logLevel
+if _.isString configuration.serv.logLevel
   logger.info "setting log level to #{configuration.srv.logLevel}"
-  Logger.setLevel configuration.srv.logLevel
+  Logger.setLevel configuration.serv.logLevel
 else
   logger.info "setting log level to default : info"
   Logger.setLevel "info"
