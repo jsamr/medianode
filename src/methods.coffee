@@ -64,10 +64,12 @@ methods = {
     if not expDir?
       setErrorCode res, ErrorCodes.exp, req, expChLogger
       return
-    mediaDir= if projectConf.mediaDir not in ["",undefined,null] then "#{projectConf.mediaDir}/" else ""
+    mediaDirName= if projectConf.mediaDir not in ["",undefined,null] then "#{projectConf.mediaDir}/" else ""
+    mediaDir = Finder.findFile "#{expDir}#{mediaDirName}"
+    console.log mediaDir
     req.appPaths={
-      exp : expDir
-      media : mediaDir
+      exp :   expDir
+      media : mediaDirName
     }
     next()
   findMedia:(req,res)->
@@ -78,32 +80,42 @@ methods = {
       if lookupPath and not req.fsErrorCallback
         req.videoPath=lookupPath
         #Upon errors, bypass lookup
+        mediaLogger.debug "Path found in redis storage : #{lookupPath}"
         req.fsErrorCallback= -> methods.findMedia(req,res)
         vidStreamer req, res, req.videoPath, req.fsErrorCallback
-      else
-        rootPath=Finder.from(base).findDirectory(projectConf.rootDir)
-        if not rootPath? then setErrorCode res, ErrorCodes.root, 404, req, mediaLogger
-        else
-          mediaLogger.debug "Found root : #{rootPath}"
-          opts=req.params
-          projectConf=req.projectConfig
-          expDir= Finder.from(rootPath).findDirectory("#{projectConf.expRegex or ''}#{opts.exp_name}")
-          if not expDir? then setErrorCode res, ErrorCodes.exp, 404, req, mediaLogger
-          else
-            mediaLogger.debug "Found exp dir : #{expDir}"
-            mediaDir= if projectConf.mediaDir not in ["",undefined,null] then "#{projectConf.mediaDir}/" else ""
-            placeDir=Finder.from(expDir).findDirectory("#{mediaDir}#{opts.place}")
-            if not placeDir? then setErrorCode res, ErrorCodes.place, 404, req, mediaLogger
-            else
-              mediaLogger.debug "Found place dir : #{placeDir}"
-              mediaFile=Finder.from(placeDir).findFile(projectConf.mediaRegex or '')
-              if not mediaFile? then setErrorCode res, ErrorCodes.media, 404, req, mediaLogger
-              else
-                mediaLogger.debug "Found media file : #{mediaFile}"
-                req.videoPath=mediaFile.replace(base,"vid/")
-                mediaLogger.info req.path
-                pathStore.save req.path, req.videoPath
-                vidStreamer req, res, req.videoPath, req.fsErrorCallback
+        return
+
+      rootPath=Finder.from(base).findDirectory(projectConf.rootDir)
+      if not rootPath?
+        setErrorCode res, ErrorCodes.root, 404, req, mediaLogger
+        return
+
+      mediaLogger.trace "Found root : #{rootPath}"
+      opts=req.params
+      projectConf=req.projectConfig
+      expDir= Finder.from(rootPath).findDirectory("#{projectConf.expRegex or ''}#{opts.exp_name}")
+      if not expDir?
+        setErrorCode res, ErrorCodes.exp, 404, req, mediaLogger
+        return
+
+      mediaLogger.trace "Found exp dir : #{expDir}"
+      mediaDir= if projectConf.mediaDir not in ["",undefined,null] then "#{projectConf.mediaDir}/" else ""
+      placeDir=Finder.from(expDir).findDirectory("#{mediaDir}#{opts.place}")
+      if not placeDir?
+        setErrorCode res, ErrorCodes.place, 404, req, mediaLogger
+        return
+
+      mediaLogger.trace "Found place dir : #{placeDir}"
+      mediaFile=Finder.from(placeDir).findFile(projectConf.mediaRegex or '')
+      if not mediaFile?
+        setErrorCode res, ErrorCodes.media, 404, req, mediaLogger
+        return
+
+      mediaLogger.debug "Found media file : #{mediaFile}"
+      req.videoPath=mediaFile.replace(base,"vid/")
+      mediaLogger.info req.path
+      pathStore.save req.path, req.videoPath
+      vidStreamer req, res, req.videoPath, req.fsErrorCallback
 
   flushProject:(req,res)-> res.end()
   flushPlaces:(req,res)->
