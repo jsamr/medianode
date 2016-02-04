@@ -19,7 +19,7 @@ optional= (lib)->
   out=null
   try
     out=require(lib)
-  catch e then loaderLogger.warn JSON.stringify e
+  catch e then loaderLogger.warn e
   out
 
 assertHandlerHasExpectedSignature = (handler,name) ->
@@ -74,19 +74,19 @@ module.exports = {
     module=optional("#{authHandlerDir}#{moduleName}")
     handler=null
     if module is null
-      loaderLogger.error "handler #{auth_handler.name} npm module does not exists in path #{authHandlerDir}#{auth_handler.name} "
+      loaderLogger.warn "handler #{moduleName} npm module does not exists in path #{authHandlerDir}#{moduleName} "
       process.exit 1
     if not _.isFunction(module)
-      loaderLogger.error "handler #{auth_handler.name} npm module must export a function"
+      loaderLogger.error "handler #{moduleName} npm module must export a function"
       process.exit 1
     try  handler=module(uri,options)
     catch e
-      loaderLogger.error "auth_handler #{auth_handler.name} npm module encountered an error while loading"
-      loaderLogger.error JSON.stringify e
+      loaderLogger.error "auth_handler #{moduleName} npm module encountered an error while loading"
+      loaderLogger.error  e
       process.exit 1
     # Inherits from authHandlerPrototype
     assertHandlerHasExpectedSignature(handler,moduleName)
-    handler.logger=new Logger("#{prefix}#{moduleName}")
+    handler.logger=new Logger("#{prefix}:#{moduleName}")
     fullHandler=_.create(authHandlerPrototype, handler)
     if reconnectAfter_s then fullHandler.reconnectAfter_s=reconnectAfter_s
     fullHandler

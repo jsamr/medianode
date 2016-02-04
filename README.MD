@@ -355,6 +355,11 @@ Un module est un simple fichier javascript **ou** coffeescript qui a pour role d
 ### Spécifications
 
 Rien de mieux qu'un exemple javascript :
+**REMARQUES IMPORTANTES**
+
+- aucune gestion d'erreur à implémenter, elles sont faites en amont
+- l'utilisation de `this.logger` est fortement encouragée pour journaliser des informations et/ou debugger. [Informations sur la librairie de logging utilisée ici](https://www.npmjs.com/package/pince)
+
 ```javascript
 var postgres=require("node-postgres"); // juste pour l'exemple, mais ça peut être n'importe quelle package npm
 // Du code pour déclarer des fonctions privées etc...

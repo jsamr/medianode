@@ -5,14 +5,17 @@ configuration= require "../config.json"
 Logger       = require "pince"
 prefix       = "media-node:init"
 logger   = new Logger prefix
+
+# FAST AND DIRTY FIX TO https://github.com/mad-eye/pince/issues/12
+logger.error=(message)-> console.error "#{new Date} error:  [#{@name}]  #{message}"
 permissionLogger   = new Logger "#{prefix}:permissions"
+
+logger.error "this is some stupid error"
 
 checkPermission = (file, mask, cb) ->
   fs.stat file, (error, stats) ->
-    if error
-      cb error, false
-    else
-      cb null, ! !(mask & parseInt((stats.mode & parseInt('777', 8)).toString(8)[0]))
+    if error then cb error, false
+    else cb null, !!(mask & parseInt((stats.mode & parseInt('777', 8)).toString(8)[0]))
 
 
 if os.platform() isnt "linux"
@@ -53,7 +56,7 @@ for prjName,project of configuration.projects
 
 logger.info "server init successful"
 if _.isString configuration.serv.logLevel
-  logger.info "setting log level to #{configuration.srv.logLevel}"
+  logger.info "setting log level to #{configuration.serv.logLevel}"
   Logger.setLevel configuration.serv.logLevel
 else
   logger.info "setting log level to default : info"
