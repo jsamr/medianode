@@ -4,13 +4,11 @@ os           = require 'os'
 configuration= require "../config.json"
 Logger       = require "pince"
 prefix       = "media-node:init"
-logger   = new Logger prefix
-
 # FAST AND DIRTY FIX TO https://github.com/mad-eye/pince/issues/12
-logger.error=(message)-> console.error "#{new Date} error:  [#{@name}]  #{message}"
-permissionLogger   = new Logger "#{prefix}:permissions"
+Logger.prototype.error=(message)-> console.error "#{new Date} error:  [#{@name}]  #{message}"
 
-logger.error "this is some stupid error"
+logger   = new Logger prefix
+permissionLogger   = new Logger "#{prefix}:permissions"
 
 checkPermission = (file, mask, cb) ->
   fs.stat file, (error, stats) ->

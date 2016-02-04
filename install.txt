@@ -1,0 +1,5 @@
+Pour intégrer le auth_handler mongo : https://github.com/mongodb/node-mongodb-native#diagnosing-on-unix
+
+essayer
+    npm install --save kerberos
+s'il y a un problème à l'installation

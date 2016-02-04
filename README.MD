@@ -375,24 +375,11 @@ module.exports = function(uri,options){
           // et assigner true à isCredentialWellFormatted le cas échéant
           return areCredentialsWellFormatted;
         },
-        start:function(){
-            // Du code pour ouvrir la connexion avec un postgresql
-            // Cette méthode peut lever une erreur, si options n'est pas dans le format attendu par exemple
-            // Garder à l'esprit que cette fonction peut être appellée plusieurs fois au cours d'une execution du serveur.
-            // En effet, le serveur essaiera de relancer le gestionnaire tous les $reconnectAfter_s lorsqu'il rencontre une erreur
-        },
-        stop:function(){
-            // Du code pour fermer proprement la connexion avec postgresql
-            // Cette méthode peut lever une erreur.
-            // Garder à l'esprit que cette fonction peut être appellée plusieurs fois au cours d'une execution du serveur.
-        },
-        authClientSync : function(credentials){
-            var success=false
+        authClientASync : function(credentials){
             // Du code pour authentifier l'utilisateurs avec 'credentials'
-            // et assigner true à success si l'authentification réussit
-            // Cette méthode doit lever une erreur si un problème est rencontré avec le driver
-            return success;
-
+            // Doit imperativement renvoyer une Promise
+            // L'énorme majorité des drivers db proposent des promises par défaut
+            // Plus d'infos sur les Promises en JS ici : http://zpalexander.com/blog/javascript-promises-node-js/ 
         }
     }
 }

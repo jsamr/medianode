@@ -37,7 +37,6 @@ class AuthApplication extends BasicApplication
       @logger.error "auth_handler #{authHConf.name} not declared in config.json"
       process.exit 1
     @_authHandler=authHandlers.load authHConf.name, authHConf.uri, params.options, params.reconnectAfter_s
-    if @_authHandler.turnOnline() isnt null then @logger.warning "Could not start auth handler #{name}, will retry later"
 
 applications={}
 ApplicationClass = if configuration.serv.disableAuth then BasicApplication  else AuthApplication
