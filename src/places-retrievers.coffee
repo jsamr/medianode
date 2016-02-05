@@ -14,7 +14,7 @@ placesWithMetaRetriever = (mediaPath, projectConf)->
     places=singleRetriever mediaPath, projectConf, absolute
     if projectConf.supportsMeta
       meta  = Finder.from(absolute).findFile "meta.yml"
-      places.meta = (yamlLoader meta if meta) || {}
+      places.meta = (yamlLoader meta if meta) || null
     places
 
 standardPlaceRetriever = (mediaPath, projectConf)->
