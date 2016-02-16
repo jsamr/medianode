@@ -5,7 +5,7 @@ _       = require("lodash")
 Logger  = require("pince")
 prefix = "media-node:auth-handlers"
 loaderLogger = new Logger "#{prefix}:loader"
-
+logger = new Logger prefix
 handlerRequiredMethods=["assertCredentials","authClientASync"]
 RECONNECT_AFTER_S_DEFAULT=6000
 
@@ -34,7 +34,9 @@ authHandlerPrototype=
       @authClientASync(credentials).then (success) =>
           if success then app._tokens.publish(res)
           else methods.setErrorCode res, ErrorCodes.auth_failure, 403, null, @logger
-        .catch (err) => methods.setErrorCode res, ErrorCodes.auth_handler_error, 500, null, @logger
+        .catch (err) =>
+          logger.error err
+          methods.setErrorCode res, ErrorCodes.auth_handler_error, 500, null, @logger
 
   attemptAuthClient : (credentials, res, app) -> @authClient credentials,res,app
 

@@ -1,6 +1,6 @@
 {
   "name": "video-node",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "git": "",
   "description": "A http server to route CoLab associated files",
   "main": "/lib/app.js",
@@ -10,6 +10,7 @@
   "author": "Jules Randolph <jules.randolph@usherbrooke.ca>",
   "license": "MIT",
   "dependencies": {
+    "async": "^1.5.2",
     "body-parser": "^1.14.1",
     "events": "^1.1.0",
     "express": "^4.13.3",
