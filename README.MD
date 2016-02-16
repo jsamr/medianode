@@ -400,9 +400,9 @@ Comme vous pouvez le voir la signature du module est très simple.
 
 - `uri` et `options` sont directement issus du champs `$auth_handler` de la ou des application(s) qui vont utiliser le module.
 - `credentials` est un objet qui a été dé-urlencodé depuis [la requête d'authentification](#auth)
-- la fonction `authClientSync` **ne doit pas** catcher d'erreur, c'est le serveur en amont qui s'en chargera, et renverra [un code d'erreur "AUTH_FAILURE.HANDLER_INTERNAL_ERROR"](#error_ids).
-- lorsque la fonction `assertCredentials` renvoit `false`, le serveur renverra [un code d'erreur "AUTH_FAILURE.BAD_CREDENTIALS"](#error_ids)
-- lorsque la *promise* renvoyée par `authClientSync` renvoit `true`, le serveur va générer un token et le renvoyer au client. Dans le cas contraire, elle renverra [un code d'erreur "AUTH_FAILURE.FORBIDDEN"](#error_ids).
+- lorsque la fonction `assertCredentials` renvoie `false`, le serveur renverra [un code d'erreur "AUTH_FAILURE.BAD_CREDENTIALS"](#error_ids)
+- la fonction `authClientASync` **ne doit pas** catcher d'erreur, c'est le serveur en amont qui s'en chargera, et renverra [un code d'erreur "AUTH_FAILURE.HANDLER_INTERNAL_ERROR"](#error_ids).
+- lorsque la *promise* renvoyée par `authClientASync` renvoie `true`, le serveur va générer un token et le renvoyer au client. Dans le cas contraire, elle renverra [un code d'erreur "AUTH_FAILURE.FORBIDDEN"](#error_ids).
 
 Eh voià !
 
