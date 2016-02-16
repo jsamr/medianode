@@ -202,6 +202,7 @@ Cette requête renvoie :
   - `place` : le lieu de captation, c-à-d le nom du dossier
   - `fileFound` : `true` si un fichier a été trouvé, `false` sinon
   - `meta` : **optionnel** Si l'option `$supportsMeta` est activée pour le projet **et** l'option `$enableMeta` est activée pour l'application :
+  
     - un objet contenant les champs [du fichier YAML](#meta-infos) si un tel fichier existe
     - `{}` sinon
 - Un [code d'erreur](#error_ids) si un problème est rencontré
