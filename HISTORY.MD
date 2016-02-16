@@ -24,5 +24,5 @@ v0.1.0 (draft)
   - répertoire racine d'une expérimentation
   - répertoire racine des médias propres à l'expérimentations
   - répertoire racine d'un point de captation
-- serialisation des chemins dans une base redux pour optimiser le temps de requêtes médias multiples
+- serialisation des chemins dans une base redis pour optimiser le temps de requêtes médias multiples
   
