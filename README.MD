@@ -352,6 +352,7 @@ Un module est un simple fichier javascript **ou** coffeescript qui a pour role d
 - Utilisez [lodash](https://lodash.com/), qui est déjà incluse dans le projet, une excellente lib fonctionnelle.
 
 
+<a name="handlers">
 ### Spécifications
 
 Rien de mieux qu'un exemple javascript :
@@ -366,7 +367,8 @@ var postgres=require("node-postgres"); // juste pour l'exemple, mais ça peut ê
 
 // exemple d'uri : "postgres://username:password@localhost/database"
 // options est un objet javascript
-module.exports = function(uri,options){
+// Promise, le package promise, cf https://www.npmjs.com/package/promise
+module.exports = function(uri,options,Promise){
     // DOIT renvoyer un objet ayant EXACTEMENT (ni plus ni moins) les méthodes suivantes
     return {
         assertCredentials:function(credentials){
@@ -377,9 +379,16 @@ module.exports = function(uri,options){
         },
         authClientASync : function(credentials){
             // Du code pour authentifier l'utilisateurs avec 'credentials'
-            // Doit imperativement renvoyer une Promise
-            // L'énorme majorité des drivers db proposent des promises par défaut
-            // Plus d'infos sur les Promises en JS ici : http://zpalexander.com/blog/javascript-promises-node-js/ 
+            // Doit imperativement renvoyer une Promise à partir du package Promise passé en argument
+            // Plus d'infos sur le package promise utilisé : https://www.npmjs.com/package/promise
+            // Exemple :
+            promise = new Promise(function(accept,reject){
+                // Do some stuff
+                // ...
+                accept(true);  // => authentification réussie
+                // accept(false);  => authentification échouée
+            });
+            return promise;
         }
     }
 }
@@ -393,7 +402,7 @@ Comme vous pouvez le voir la signature du module est très simple.
 - `credentials` est un objet qui a été dé-urlencodé depuis [la requête d'authentification](#auth)
 - la fonction `authClientSync` **ne doit pas** catcher d'erreur, c'est le serveur en amont qui s'en chargera, et renverra [un code d'erreur "AUTH_FAILURE.HANDLER_INTERNAL_ERROR"](#error_ids).
 - lorsque la fonction `assertCredentials` renvoit `false`, le serveur renverra [un code d'erreur "AUTH_FAILURE.BAD_CREDENTIALS"](#error_ids)
-- lorsque la fonction `authClientSync` renvoit `true`, le serveur va générer un token et le renvoyer au client. Dans le cas contraire, elle renverra [un code d'erreur "AUTH_FAILURE.FORBIDDEN"](#error_ids).
+- lorsque la *promise* renvoyée par `authClientSync` renvoit `true`, le serveur va générer un token et le renvoyer au client. Dans le cas contraire, elle renverra [un code d'erreur "AUTH_FAILURE.FORBIDDEN"](#error_ids).
 
 Eh voià !
 

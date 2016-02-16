@@ -1,9 +1,8 @@
 _  = require "lodash"
-Promise = require "promise"
 MClient = require("mongodb").MongoClient
 
 
-module.exports = (uri, options) ->
+module.exports = (uri, options, Promise) ->
 
   assertCredentials: (credentials) ->
     areCredentialsWellFormatted = _.isString(credentials.user) and _.isString(credentials.hash)

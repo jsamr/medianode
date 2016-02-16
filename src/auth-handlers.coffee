@@ -4,6 +4,7 @@ methods = require("./methods")
 _       = require("lodash")
 Logger  = require("pince")
 prefix = "media-node:auth-handlers"
+Promise = require "promise"
 loaderLogger = new Logger "#{prefix}:loader"
 logger = new Logger prefix
 handlerRequiredMethods=["assertCredentials","authClientASync"]
@@ -50,7 +51,7 @@ module.exports = {
     if not _.isFunction(module)
       loaderLogger.error "handler #{moduleName} npm module must export a function"
       process.exit 1
-    try  handler=module(uri,options)
+    try  handler=module(uri,options,Promise)
     catch e
       loaderLogger.error "auth_handler #{moduleName} npm module encountered an error while loading"
       loaderLogger.error  e
