@@ -23,15 +23,19 @@ module.exports = (uri, options) ->
     promise
 
   authClientASync: (credentials) ->
-    promise = new Promise (accept)->
+    promise = new Promise (accept)=>
       MClient.connect(uri).then (db)=>
-        selector=
-          _id:credentials.user
-          "services.password.bcrypt":credentials.hash
+        selector=_id:credentials.user
         users=db.collection 'users'
-        users.findOne(selector).then (user)->
+        users.findOne(selector).then (user)=>
           db.close()
-          accept user isnt null
+          if user
+            hasCredits= (_.get user, "services.password.bcrypt") is credentials.hash
+            @logger.debug "user #{credentials.user} access #{if hasCredits then 'granted' else 'refused'}"
+            accept hasCredits
+          else
+            @logger.warn "user #{credentials.user} is not registered!"
+            accept false
     promise
 
 
