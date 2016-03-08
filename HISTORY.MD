@@ -1,3 +1,7 @@
+v0.3.0
+
+- gestion du fichier de meta par défaut à la racine d'un projet
+
 
 v0.2.2 
 

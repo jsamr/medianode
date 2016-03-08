@@ -1,7 +1,7 @@
-yaml = require 'js-yaml'
-fs   = require 'fs'
-Logger = require 'pince'
-logger = new Logger 'media-node:yaml-loader'
+yaml     = require 'js-yaml'
+fs       = require 'fs'
+Logger   = require 'pince'
+logger   = new Logger 'media-node:yaml-loader'
 
 # see https://github.com/nodeca/js-yaml
 module.exports= (path,encoding="utf-8")->

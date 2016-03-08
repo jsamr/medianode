@@ -1,6 +1,6 @@
 require('../lib/redisUtils')
 redis         = require("redis")
-configuration = require("../config.json")
+configuration = require("./build-config")
 cleanup       = require("../lib/cleanup")
 crypto        = require("crypto")
 ErrorCodes    = require("./error-codes")

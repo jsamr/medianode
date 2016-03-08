@@ -429,6 +429,26 @@ soundQ: 0
 Bien entendu, libre à l'utilisateur de rajouter des attributs.  
 Ils seront tous disponibles [dans la requête d'information](#request_place).
 
+Il est aussi possible de donner des valeurs par défaut pour chaque point de captation dans un fichier `meta.yml` à la racine du projet.
+Voici un exemple : 
+
+```yaml
+---
+chambre:
+    soundQ: 2
+cuisine-interieur:
+    soundQ: 3
+cuisine-plafond:
+    soundQ: 0
+cuisiniere:
+    soundQ: 2
+salle-bain:
+    soundQ: 2
+salle-manger:
+    soundQ: 2
+    comments: "L'angle d'acquisition ne couvre pas le réfrigérateur. Basculer sur cuisine-plafond pour le voir."
+```
+
 <a name="mime_types"></a>
 ## Types mimes
 

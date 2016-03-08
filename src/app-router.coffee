@@ -1,7 +1,7 @@
 m              = require('./methods')
 sec            = require("./security")
 bodyParser     = require("body-parser")
-configuration  = require("../config.json")
+configuration  = require("./build-config")
 express        = require("express")
 
 expressRouter=express()

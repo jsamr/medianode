@@ -1,12 +1,12 @@
 tokens         = require './tokens'
-configuration  = require '../config.json'
+configuration  = require './build-config'
 methods        = require './methods'
 _              = require 'lodash'
 authHandlers   = require './auth-handlers'
 placeRetrivers = require './places-retrievers'
 Logger         = require 'pince'
-declared_auth_handlers =configuration.auth_handlers or []
 
+declared_auth_handlers =configuration.auth_handlers or []
 prefix = "media-node:app"
 
 

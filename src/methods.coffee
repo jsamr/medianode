@@ -1,5 +1,5 @@
 ErrorCodes    = require "./error-codes"
-configuration = require "../config.json"
+configuration = require "./build-config"
 Finder        = require 'fs-finder'
 fs            = require "fs"
 _             = require "lodash"

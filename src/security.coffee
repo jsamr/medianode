@@ -1,5 +1,5 @@
 crypto       = require('crypto')
-configuration= require("../config.json")
+configuration= require("./build-config")
 ErrorCodes   = require("./error-codes")
 methods      = require("./methods")
 _            = require("lodash")

@@ -1,11 +1,9 @@
 fs           = require "fs"
 _            = require "lodash"
 os           = require 'os'
-configuration= require "../config.json"
+configuration= require "./build-config"
 Logger       = require "pince"
 prefix       = "media-node:init"
-# FAST AND DIRTY FIX TO https://github.com/mad-eye/pince/issues/12
-Logger.prototype.error=(message)-> console.error "#{new Date} error:  [#{@name}]  #{message}"
 
 logger   = new Logger prefix
 permissionLogger   = new Logger "#{prefix}:permissions"

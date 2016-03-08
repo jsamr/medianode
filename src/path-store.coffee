@@ -1,5 +1,5 @@
 CacheClient   = require('redis-cache-client')
-configuration = require("../config.json")
+configuration = require("./build-config")
 redis         = require("redis")
 
 cache=CacheClient({
