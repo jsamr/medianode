@@ -13,7 +13,10 @@ hash npm 2>/dev/null || {
 hash coffee 2>/dev/null || {
     echo "FAILURE : coffee-script doit être installé!" ; exit 1
 }
-
+hash redis-server 2>/dev/null || {
+    echo "FAILURE : redis-server doit être installé!" ; exit 1
+}
+mkdir -p /etc/redis/
 cp ../redis.conf /etc/redis/redis-media-node.conf
 groupadd media-node &> /dev/null
 echo "Création du groupe 'media-node'"
