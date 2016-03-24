@@ -41,12 +41,14 @@ if not configuration.serv.disableAuth
 
   security.authWithCredentials = (req,res)=>
     application=applications[req.params.application]
+    credAuthLogger.debug 'Attempting auth'
     if application is undefined
       methods.setErrorCode res, ErrorCodes.application, 403, req, credAuthLogger
       return
     application.authClient req.body, res
 
   security.authWithToken = (req,res) ->
+    tokenAuthLogger.debug 'Attempting auth'
     application=applications[req.params.application]
     if application is undefined
       methods.setErrorCode res, ErrorCodes.application, 403, req, tokenAuthLogger

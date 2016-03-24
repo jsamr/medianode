@@ -21,7 +21,7 @@ setErrorCode=(res,msg,code=200,req,log=logger)->
   res.setHeader 'Content-Type','application/json'
   res.setHeader "Access-Control-Allow-Origin", '*'
   res.setHeader "Access-Control-Allow-Methods", "GET, POST"
-  res.status=code
+  res.status(code)
   client=""
   if req? then client=", CLIENT: #{getClientIp(req)}"
   log.warn("ERROR : #{msg}, HTTP status : #{code}#{client}")
