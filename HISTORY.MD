@@ -1,3 +1,8 @@
+v0.3.2
+
+- fix bug majeur lorsqu'une erreur est rencontrée par le serveur (mauvais code de status http
+- fix bug majeur lorsqu'un fichier meta n'est pas disponible à la racine du projet²
+
 v0.3.1
 
 - fix dans le script d'installation : vérification de l'existance de la commande redis-server
